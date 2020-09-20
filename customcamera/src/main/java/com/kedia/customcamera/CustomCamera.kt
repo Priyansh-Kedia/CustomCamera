@@ -130,7 +130,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             width,
             height
         )
-        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
+        if (abs(previewRatio - RATIO_4_3_VALUE) <= kotlin.math.abs(previewRatio - RATIO_16_9_VALUE)) {
             return AspectRatio.RATIO_4_3
         }
         return AspectRatio.RATIO_16_9
@@ -166,7 +166,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 //                    Log.d(TAG, msg)
 //                }
 //            })
-        imageCapture.takePicture(ContextCompat.getMainExecutor(context),object : ImageCapture.OnImageCapturedCallback(){
+        imageCapture.takePicture(ContextCompat.getMainExecutor(context),object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 // Use the image, then make sure to close it.
                 Log.d(TAG, image.toString())
@@ -180,7 +180,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             }
 
             override fun onError(exception: ImageCaptureException) {
-                val errorType = exception.getImageCaptureError()
+                val errorType = exception.imageCaptureError
 
             }
         })
