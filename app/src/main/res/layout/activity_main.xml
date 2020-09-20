@@ -6,9 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
+<!--    <androidx.camera.view.PreviewView-->
+<!--        android:id="@+id/surfaceView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
+
     <com.kedia.customcamera.CustomCamera
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/custom" />
+        android:layout_height="match_parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
