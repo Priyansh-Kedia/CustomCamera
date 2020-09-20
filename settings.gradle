@@ -1,0 +1,3 @@
+include ':customcamera'
+include ':app'
+rootProject.name = "CustomCamera"
