@@ -191,19 +191,14 @@ class CustomCamera : FrameLayout, LifecycleOwner {
     }
 
     private fun rotateBitmap(decodeByteArray: Bitmap?): Bitmap? {
+        val width = decodeByteArray?.width
+        val height = decodeByteArray?.height
+
         val matrix = Matrix()
         matrix.postRotate(90f)
-        val scaledBitmap = Bitmap.createScaledBitmap(decodeByteArray!!, width, height, true)
-
-        return Bitmap.createBitmap(
-            scaledBitmap,
-            0,
-            0,
-            scaledBitmap.width,
-            scaledBitmap.height,
-            matrix,
-            true
-        )
+        val rotatedImage = Bitmap.createBitmap(decodeByteArray!!, 0, 0, width!!, height!!, matrix, true)
+        decodeByteArray.recycle()
+        return rotatedImage
     }
 
     private fun getOutputDirectory(): File {
