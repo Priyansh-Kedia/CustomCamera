@@ -57,7 +57,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         init(attrs)
-        initLayout(attrs)
+        initLayout()
     }
 
     private fun init(attrs: AttributeSet?) {
@@ -70,7 +70,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         }
     }
 
-    private fun initLayout(attrs: AttributeSet?) {
+    private fun initLayout() {
         if (isInEditMode) {
             return
         }
@@ -108,15 +108,6 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             imageCapture = ImageCapture.Builder()
                 .build()
 
-//            val imageAnalyzer = ImageAnalysis.Builder()
-//                .build()
-//                .also {
-//                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-//                        Log.d(TAG, "Average luminosity: $luma")
-//                    })
-//                }
-
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
