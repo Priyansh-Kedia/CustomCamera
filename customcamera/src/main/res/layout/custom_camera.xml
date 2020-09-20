@@ -10,14 +10,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <Button
+    <!--    <Button-->
+    <!--        android:id="@+id/captureImage"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="Capture"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent" />-->
+
+    <FrameLayout
         android:id="@+id/captureImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Capture"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/capture_image_ring"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/capturedImage"
@@ -26,26 +38,26 @@
         android:scaleType="centerCrop"
         android:visibility="gone" />
 
-<!--    <Button-->
-<!--        android:id="@+id/recaptureImage"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="New"-->
-<!--        android:visibility="gone"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent" />-->
+    <!--    <Button-->
+    <!--        android:id="@+id/recaptureImage"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="New"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent" />-->
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/imageRecyclerView"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="80dp"-->
-<!--        android:visibility="visible"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.8"-->
-<!--        tools:itemCount="5"-->
-<!--        tools:listitem="@layout/item_image" />-->
+    <!--    <androidx.recyclerview.widget.RecyclerView-->
+    <!--        android:id="@+id/imageRecyclerView"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="80dp"-->
+    <!--        android:visibility="visible"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintVertical_bias="0.8"-->
+    <!--        tools:itemCount="5"-->
+    <!--        tools:listitem="@layout/item_image" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
