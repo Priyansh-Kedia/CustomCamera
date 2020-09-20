@@ -16,6 +16,7 @@ import androidx.annotation.LayoutRes
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -32,6 +33,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 
     @LayoutRes
     private var mainLayoutId = 0
+    private var showSnapButton: Boolean = false
 
     private lateinit var surfaceHolder: SurfaceHolder
 
@@ -51,6 +53,43 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 
     private var imageCapture: ImageCapture? = null
 //
+
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init(attrs)
+        initLayout(attrs)
+    }
+
+    private fun init(attrs: AttributeSet?) {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomCamera)
+        try {
+            mainLayoutId = R.layout.custom_camera
+            showSnapButton = typedArray.getBoolean(R.styleable.CustomCamera_showSnapButton, false)
+        } finally {
+            typedArray.recycle()
+        }
+    }
+
+    private fun initLayout(attrs: AttributeSet?) {
+        if (isInEditMode) {
+            return
+        }
+
+        val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
+
+        startCamera()
+
+        outputDirectory = getOutputDirectory()
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        captureImage.isVisible = showSnapButton
+
+        captureImage.setOnClickListener {
+            takePhoto()
+            Log.d(TAG, "clicked")
+        }
+
+    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
@@ -104,40 +143,6 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             return AspectRatio.RATIO_4_3
         }
         return AspectRatio.RATIO_16_9
-    }
-
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init(attrs)
-        initLayout(attrs)
-    }
-
-    private fun init(attrs: AttributeSet?) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomCamera)
-        try {
-            mainLayoutId = R.layout.custom_camera
-        } finally {
-            typedArray.recycle()
-        }
-    }
-
-    private fun initLayout(attrs: AttributeSet?) {
-        if (isInEditMode) {
-            return
-        }
-
-        val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
-
-        startCamera()
-
-        outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
-        captureImage.setOnClickListener {
-            takePhoto()
-            Log.d(TAG, "clicked")
-        }
-
     }
 
     private fun takePhoto() {

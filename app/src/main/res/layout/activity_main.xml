@@ -7,13 +7,14 @@
     tools:context=".MainActivity">
 
 
-<!--    <androidx.camera.view.PreviewView-->
-<!--        android:id="@+id/surfaceView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
+    <!--    <androidx.camera.view.PreviewView-->
+    <!--        android:id="@+id/surfaceView"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent" />-->
 
     <com.kedia.customcamera.CustomCamera
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:showSnapButton="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
