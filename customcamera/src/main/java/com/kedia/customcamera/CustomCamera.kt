@@ -78,7 +78,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             mainLayoutId = R.layout.custom_camera
             showSnapButton = typedArray.getBoolean(R.styleable.CustomCamera_showSnapButton, false)
             snapButtonColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
-            snapButtonSelectedColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonSelectedColor, Color.parseColor("#800000"))
+            snapButtonSelectedColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonSelectedColor, Color.parseColor("#CB0000"))
         } finally {
             typedArray.recycle()
         }
@@ -108,13 +108,6 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
 
-        customCameraAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                super.onItemRangeInserted(positionStart, itemCount)
-
-            }
-        })
-
 //        captureImage.setOnClickListener {
 //            takePhoto()
 //            Log.d(TAG, "clicked")
@@ -125,14 +118,12 @@ class CustomCamera : FrameLayout, LifecycleOwner {
                 MotionEvent.ACTION_DOWN -> {
                     view.backgroundTintList = ColorStateList.valueOf(snapButtonSelectedColor)
                     view.isSelected = true
-                    Log.d(TAG, "down")
                     return@setOnTouchListener true
                 }
 
                 MotionEvent.ACTION_UP -> {
                     view.isSelected = false
                     view.backgroundTintList = ColorStateList.valueOf(snapButtonColor)
-                    Log.d(TAG, "up")
                     takePhoto()
                     return@setOnTouchListener true
                 }
