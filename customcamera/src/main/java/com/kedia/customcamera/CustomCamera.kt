@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
+import android.view.animation.Animation
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.camera.core.*
@@ -20,6 +21,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.custom_camera.view.*
 import java.io.File
 import java.lang.Math.abs
@@ -48,8 +51,8 @@ class CustomCamera : FrameLayout, LifecycleOwner {
     private lateinit var camera: Camera
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
-//    private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
-//    private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+    private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
+    private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
 
     private var imageCapture: ImageCapture? = null
 //
@@ -79,10 +82,22 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 
         startCamera()
 
+        imageRecyclerView.apply {
+            adapter = customCameraAdapter
+            layoutManager = linearLayoutManager
+        }
+
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         captureImage.isVisible = showSnapButton
+
+        customCameraAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                Log.d("TAG!!!!","called data")
+            }
+        })
 
         captureImage.setOnClickListener {
             takePhoto()
@@ -140,17 +155,15 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        Log.d(TAG, "returned")
-
         // Create time-stamped output file to hold the image
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()
-            ).format(System.currentTimeMillis()) + ".jpg")
-
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-        Log.d(TAG, outputOptions.toString() + "    +++   " + photoFile.absoluteFile)
+//        val photoFile = File(
+//            outputDirectory,
+//            SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()
+//            ).format(System.currentTimeMillis()) + ".jpg")
+//
+//        // Create output options object which contains file + metadata
+//        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+//        Log.d(TAG, outputOptions.toString() + "    +++   " + photoFile.absoluteFile)
         // Set up image capture listener, which is triggered after photo has
         // been taken
 //        imageCapture.takePicture(
@@ -172,11 +185,21 @@ class CustomCamera : FrameLayout, LifecycleOwner {
                 Log.d(TAG, image.toString())
                 val buffer = image.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
+                val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
                 capturedImage.apply {
-                    setImageBitmap(rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size)))
-                    visibility = View.VISIBLE
+                    setImageBitmap(rotatedBitmap)
                 }
 
+                val atTop = !imageRecyclerView.canScrollVertically(-1)
+
+
+                customCameraAdapter.addData(rotatedBitmap)
+
+                if (atTop) {
+                    imageRecyclerView.scrollToPosition(0)
+                }
+                recaptureImage.isVisible = capturedImage.isVisible
+                image.close()
             }
 
             override fun onError(exception: ImageCaptureException) {
