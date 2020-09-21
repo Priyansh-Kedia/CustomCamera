@@ -2,21 +2,27 @@ package com.kedia.customcamera
 
 import android.Manifest
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
 import android.hardware.Camera
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.View
 import android.view.animation.Animation
 import android.widget.FrameLayout
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
 import androidx.annotation.LayoutRes
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColor
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -36,6 +42,9 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 
     @LayoutRes
     private var mainLayoutId = 0
+
+    private var snapButtonColor: Int = context.resources.getColor(R.color.cardview_light_background)
+    private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var showSnapButton: Boolean = false
 
     private lateinit var surfaceHolder: SurfaceHolder
@@ -68,6 +77,8 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         try {
             mainLayoutId = R.layout.custom_camera
             showSnapButton = typedArray.getBoolean(R.styleable.CustomCamera_showSnapButton, false)
+            snapButtonColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
+            snapButtonSelectedColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonSelectedColor, Color.parseColor("#800000"))
         } finally {
             typedArray.recycle()
         }
@@ -87,22 +98,48 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             layoutManager = linearLayoutManager
         }
 
+
+
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        captureImage.isVisible = showSnapButton
+        captureImage.apply {
+            isVisible = showSnapButton
+            backgroundTintList = ColorStateList.valueOf(snapButtonColor)
+        }
 
         customCameraAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 super.onItemRangeInserted(positionStart, itemCount)
-                Log.d("TAG!!!!","called data")
+
             }
         })
 
-        captureImage.setOnClickListener {
-            takePhoto()
-            Log.d(TAG, "clicked")
+//        captureImage.setOnClickListener {
+//            takePhoto()
+//            Log.d(TAG, "clicked")
+//        }
+
+        captureImage.setOnTouchListener { view, motionEvent ->
+            when(motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    view.backgroundTintList = ColorStateList.valueOf(snapButtonSelectedColor)
+                    view.isSelected = true
+                    Log.d(TAG, "down")
+                    return@setOnTouchListener true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    view.isSelected = false
+                    view.backgroundTintList = ColorStateList.valueOf(snapButtonColor)
+                    Log.d(TAG, "up")
+                    takePhoto()
+                    return@setOnTouchListener true
+                }
+                else -> {return@setOnTouchListener true}
+            }
         }
+
 
     }
 
@@ -182,7 +219,6 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         imageCapture.takePicture(ContextCompat.getMainExecutor(context),object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 // Use the image, then make sure to close it.
-                Log.d(TAG, image.toString())
                 val buffer = image.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
                 val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
