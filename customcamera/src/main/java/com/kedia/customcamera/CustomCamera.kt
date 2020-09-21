@@ -8,40 +8,27 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.hardware.Camera
-import android.media.ExifInterface
-import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.SurfaceHolder
-import android.view.View
-import android.view.animation.Animation
+import android.view.*
 import android.widget.FrameLayout
-import androidx.annotation.ColorInt
-import androidx.annotation.ColorRes
+import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toColor
 import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.custom_camera.view.*
-import kotlinx.android.synthetic.main.item_image.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.Math.abs
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 
 class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
@@ -58,6 +45,7 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
 
     private lateinit var preview: Preview
+    private lateinit var gestureDetector: GestureDetector
 
     private lateinit var surfaceHolder: SurfaceHolder
 
@@ -70,6 +58,9 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
     private lateinit var camera: androidx.camera.core.Camera
     private lateinit var cameraSelector: CameraSelector
+
+    private var startTime = System.currentTimeMillis()
+    private var clickCount = 0
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
@@ -106,6 +97,7 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         cameraProvider = cameraProviderFuture.get()
 
         startCamera()
+
 
         imageRecyclerView.apply {
             adapter = customCameraAdapter
@@ -173,6 +165,32 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                     return@setOnTouchListener true
                 }
                 else -> {return@setOnTouchListener true}
+            }
+        }
+
+        surfaceView.setOnTouchListener { view, motionEvent ->
+            when (motionEvent.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    if (clickCount == 2) {
+                        clickCount = 1
+                    } else {
+                        clickCount++
+                    }
+                    if (clickCount == 1)
+                        startTime = System.currentTimeMillis()
+                    return@setOnTouchListener true
+                }
+                MotionEvent.ACTION_UP -> {
+                    val time = System.currentTimeMillis() - startTime
+                    if (clickCount == 2 && time < 500) {
+                        clickCount = 0
+                        rotateCamera.callOnClick()
+                    }
+                    return@setOnTouchListener true
+                }
+                else -> {
+                    return@setOnTouchListener true
+                }
             }
         }
 
