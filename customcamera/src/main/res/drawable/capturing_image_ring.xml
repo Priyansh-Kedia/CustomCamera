@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<shape-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:innerRadiusRatio="2.5"-->
+<!--    android:shape="oval"-->
+<!--    android:thickness="4dp"-->
+<!--    android:useLevel="false">-->
+
+<!--    <solid android:color="#FF0000"/>-->
+
+<!--</shape>-->
+
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:shape="oval">-->
+<!--    <solid-->
+<!--        android:color="#FF0000"/>-->
+<!--</shape>-->
+
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:shape="oval">-->
+<!--    <corners android:radius="10dp"/>-->
+<!--    <stroke android:color="#FF0000" android:width="5dip"/>-->
+<!--    <solid android:color="#FF0000"/>-->
+<!--</shape>-->
+
+<shape
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:innerRadiusRatio="2.5"
+    android:shape="oval"
+    android:thickness="4dp"
+    android:useLevel="false">
+
+    <solid android:color="#FF0000"/>
+
+</shape>

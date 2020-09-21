@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="CustomCamera">
-
+        <attr name="showSnapButton" format="boolean" />
+        <attr name="snapButtonColor" format="color" />
+        <attr name="snapButtonSelectedColor" format="color" />
     </declare-styleable>
 </resources>

@@ -9,6 +9,7 @@
     <com.kedia.customcamera.CustomCamera
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/custom" />
+        app:showSnapButton="true"
+        app:snapButtonColor="#fff" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
