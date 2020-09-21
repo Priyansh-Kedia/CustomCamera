@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.hardware.Camera
+import android.media.ExifInterface
+import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,12 +26,16 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColor
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.custom_camera.view.*
+import kotlinx.android.synthetic.main.item_image.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.Math.abs
 import java.text.SimpleDateFormat
@@ -38,7 +44,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-class CustomCamera : FrameLayout, LifecycleOwner {
+class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
     @LayoutRes
     private var mainLayoutId = 0
@@ -47,24 +53,29 @@ class CustomCamera : FrameLayout, LifecycleOwner {
     private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var showSnapButton: Boolean = false
 
+    private lateinit var cameraProvider: ProcessCameraProvider
+    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+
+    private lateinit var preview: Preview
+
     private lateinit var surfaceHolder: SurfaceHolder
 
 
     private lateinit var jpegCallback: Camera.PictureCallback
-    private val TAG = "TAG!!!!"
 
     private lateinit var cameraExecutor: ExecutorService
 
     private lateinit var outputDirectory: File
 
-    private lateinit var camera: Camera
+    private lateinit var camera: androidx.camera.core.Camera
+    private lateinit var cameraSelector: CameraSelector
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
 
     private var imageCapture: ImageCapture? = null
-//
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -91,6 +102,9 @@ class CustomCamera : FrameLayout, LifecycleOwner {
 
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
+        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProvider = cameraProviderFuture.get()
+
         startCamera()
 
         imageRecyclerView.apply {
@@ -98,20 +112,50 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             layoutManager = linearLayoutManager
         }
 
-
-
-        outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
+        lifecycle.addObserver(this)
 
         captureImage.apply {
             isVisible = showSnapButton
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
 
-//        captureImage.setOnClickListener {
-//            takePhoto()
-//            Log.d(TAG, "clicked")
-//        }
+        //        outputDirectory = getOutputDirectory()
+//        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        flashToggle.setOnClickListener {
+//            if (camera.cameraInfo.torchState.value == TorchState.ON) {
+//                Glide.with(context).load(R.drawable.ic_flash_off).into(flashToggle)
+//                camera.cameraControl.enableTorch(false)
+//            } else {
+//                Glide.with(context).load(R.drawable.ic_flash_on).into(flashToggle)
+////                camera.cameraControl.enableTorch(true)
+//                imageCapture?.flashMode = ImageCapture.FLASH_MODE_ON
+//            }
+            when (imageCapture?.flashMode) {
+                ImageCapture.FLASH_MODE_ON -> {
+                    Glide.with(context).load(R.drawable.ic_flash_auto).into(flashToggle)
+                    imageCapture?.flashMode = ImageCapture.FLASH_MODE_AUTO
+                }
+                ImageCapture.FLASH_MODE_OFF -> {
+                    Glide.with(context).load(R.drawable.ic_flash_on).into(flashToggle)
+                    imageCapture?.flashMode = ImageCapture.FLASH_MODE_ON
+                }
+                ImageCapture.FLASH_MODE_AUTO -> {
+                    Glide.with(context).load(R.drawable.ic_flash_off).into(flashToggle)
+                    imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
+                }
+            }
+        }
+
+        rotateCamera.setOnClickListener {
+            when (lensFacing) {
+                CameraSelector.DEFAULT_BACK_CAMERA -> {
+                    lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA
+                }
+                CameraSelector.DEFAULT_FRONT_CAMERA -> lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+            }
+            startCamera()
+        }
 
         captureImage.setOnTouchListener { view, motionEvent ->
             when(motionEvent.action) {
@@ -124,6 +168,7 @@ class CustomCamera : FrameLayout, LifecycleOwner {
                 MotionEvent.ACTION_UP -> {
                     view.isSelected = false
                     view.backgroundTintList = ColorStateList.valueOf(snapButtonColor)
+                    setButtonsClickable()
                     takePhoto()
                     return@setOnTouchListener true
                 }
@@ -131,18 +176,15 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             }
         }
 
-
     }
 
     private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-
+        //   cameraProvider.unbindAll()
         cameraProviderFuture.addListener(Runnable {
-            // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
             // Preview
-            val preview = Preview.Builder()
+            cameraSelector = lensFacing
+
+            preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(surfaceView.surfaceProvider)
@@ -151,14 +193,12 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             imageCapture = ImageCapture.Builder()
                 .build()
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture)
 
             } catch(exc: Exception) {
@@ -166,6 +206,11 @@ class CustomCamera : FrameLayout, LifecycleOwner {
             }
 
         }, ContextCompat.getMainExecutor(context))
+    }
+
+    private fun setButtonsClickable() {
+        flashToggle.isClickable = !flashToggle.isClickable
+        rotateCamera.isClickable = !rotateCamera.isClickable
     }
 
     private fun aspectRatio(width: Int, height: Int): Int {
@@ -212,20 +257,27 @@ class CustomCamera : FrameLayout, LifecycleOwner {
                 // Use the image, then make sure to close it.
                 val buffer = image.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
-                val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
-                capturedImage.apply {
-                    setImageBitmap(rotatedBitmap)
+
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+
+                        val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+                        withContext(Dispatchers.Main) {
+                            capturedImage.apply {
+                                setImageBitmap(rotatedBitmap)
+                            }
+                            customCameraAdapter.addData(rotatedBitmap)
+                            val atTop = !imageRecyclerView.canScrollVertically(-1)
+
+                            if (atTop) {
+                                imageRecyclerView.scrollToPosition(0)
+                            }
+                            recaptureImage.isVisible = capturedImage.isVisible
+                            setButtonsClickable()
+                        }
+                    }
                 }
 
-                val atTop = !imageRecyclerView.canScrollVertically(-1)
-
-
-                customCameraAdapter.addData(rotatedBitmap)
-
-                if (atTop) {
-                    imageRecyclerView.scrollToPosition(0)
-                }
-                recaptureImage.isVisible = capturedImage.isVisible
                 image.close()
             }
 
@@ -241,10 +293,33 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         val height = decodeByteArray?.height
 
         val matrix = Matrix()
-        matrix.postRotate(90f)
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+            matrix.postRotate(90f)
+            matrix.preScale(-1f,1f)
+        }
+        else {
+            matrix.postRotate(90f)
+        }
         val rotatedImage = Bitmap.createBitmap(decodeByteArray!!, 0, 0, width!!, height!!, matrix, true)
         decodeByteArray.recycle()
         return rotatedImage
+    }
+
+    override fun getLifecycle(): Lifecycle {
+        val lifecycleRegistry = LifecycleRegistry(this);
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
+        return lifecycleRegistry
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        Log.d(TAG,event.toString())
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        imageArrayList.clear()
+        cameraProvider.unbindAll()
+
     }
 
     private fun getOutputDirectory(): File {
@@ -261,12 +336,6 @@ class CustomCamera : FrameLayout, LifecycleOwner {
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-    }
-
-    override fun getLifecycle(): Lifecycle {
-        val lifecycleRegistry = LifecycleRegistry(this);
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
-        return lifecycleRegistry
     }
 
 }

@@ -60,4 +60,11 @@ dependencies {
     // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha16"
 
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
+
+    // Viewmodelscope
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha07"
+
+
 }
