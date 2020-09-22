@@ -1,7 +1,9 @@
 package com.kedia.customcamera
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.ColorStateList
 import android.graphics.*
 import android.hardware.Camera
@@ -244,13 +246,14 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
     }
 
-    fun setBrightness(progress: Int): PorterDuffColorFilter? {
-        return if (progress >= 100) {
-            val value = (progress - 100) * 255 / 100
-            PorterDuffColorFilter(Color.argb(value, 255, 255, 255), PorterDuff.Mode.SRC_OVER)
-        } else {
-            val value = (100 - progress) * 255 / 100
-            PorterDuffColorFilter(Color.argb(value, 0, 0, 0), PorterDuff.Mode.SRC_ATOP)
+    private fun changeBrightness(type: SCREEN_BRIGHTNESS) {
+        if (context is ContextWrapper) {
+            //     val context1 = (context as ContextWrapper).baseContext as Activity
+            val attrs = (context as Activity).window.attributes
+            Log.d(TAG, "before ${attrs.screenBrightness}")
+            attrs.screenBrightness = if (type == SCREEN_BRIGHTNESS.HIGH) 1f else -1f
+            Log.d(TAG, "called ${attrs.screenBrightness}")
+            (context as Activity).window.attributes = attrs
         }
     }
 
@@ -311,6 +314,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture?.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
+            changeBrightness(SCREEN_BRIGHTNESS.HIGH)
         }
 
         // Create time-stamped output file to hold the image
@@ -351,6 +355,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
+                            changeBrightness(SCREEN_BRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
                             imageArrayList.add(rotatedBitmap)
                             frontFlash.makeGone()
@@ -401,7 +406,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        Log.d(TAG,event.toString())
+
     }
 
     override fun onDetachedFromWindow() {
@@ -430,6 +435,11 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
+
+    enum class SCREEN_BRIGHTNESS(val type: String) {
+        HIGH("HIGH"),
+        LOW("LOW")
     }
 
 }
