@@ -73,11 +73,9 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private var imageCapture: ImageCapture? = null
 
     constructor(
-        context: Context,
-        listener: CustomCamera
+        context: Context
     ) : super(context) {
-        this.listener = listener
-        Log.d(TAG, "listener ${this::listener.isInitialized}")
+
     }
 
     constructor(
@@ -86,6 +84,10 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     ) : super(context, attrs) {
         init(attrs)
         initLayout()
+    }
+
+    fun setListener(listener: CustomCamera) {
+        this.listener = listener
     }
 
     private fun init(attrs: AttributeSet?) {
@@ -108,6 +110,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
+        Log.d(TAG, "init ${this::listener.isInitialized}")
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProvider = cameraProviderFuture.get()
 

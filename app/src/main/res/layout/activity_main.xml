@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:showSnapButton="true"
+        android:id="@+id/cc"
         app:snapButtonColor="@color/colorAccent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
