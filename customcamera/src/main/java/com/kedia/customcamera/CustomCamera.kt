@@ -285,12 +285,15 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                                 setImageBitmap(rotatedBitmap)
                             }
                             customCameraAdapter.addData(rotatedBitmap)
+                            imageArrayList.add(rotatedBitmap)
                             val atTop = !imageRecyclerView.canScrollVertically(-1)
 
                             if (atTop) {
                                 imageRecyclerView.scrollToPosition(0)
                             }
                             recaptureImage.isVisible = capturedImage.isVisible
+                            confirmSelections.isVisible = true
+                            imageCount.text = "${imageArrayList.size}"
                             setButtonsClickable()
                         }
                     }
