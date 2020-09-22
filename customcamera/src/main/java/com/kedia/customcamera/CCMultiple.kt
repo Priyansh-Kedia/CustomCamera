@@ -3,16 +3,15 @@ package com.kedia.customcamera
 import android.Manifest
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.Matrix
+import android.graphics.*
 import android.hardware.Camera
 import android.util.AttributeSet
 import android.util.Log
-import android.view.*
+import android.view.GestureDetector
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.SurfaceHolder
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -22,6 +21,8 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
+import com.kedia.customcamera.utils.makeGone
+import com.kedia.customcamera.utils.makeVisible
 import kotlinx.android.synthetic.main.custom_camera.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +32,7 @@ import java.lang.Math.abs
 import java.util.concurrent.ExecutorService
 
 
-class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
+class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
     @LayoutRes
     private var mainLayoutId = 0
@@ -39,10 +40,13 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private var snapButtonColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var showSnapButton: Boolean = false
+    private var showPreviewScreen: Boolean = false
 
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+
+    private lateinit var listener: CustomCamera
 
     private lateinit var preview: Preview
     private lateinit var gestureDetector: GestureDetector
@@ -68,19 +72,30 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
     private var imageCapture: ImageCapture? = null
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(
+        context: Context,
+        listener: CustomCamera
+    ) : super(context) {
+        this.listener = listener
+        Log.d(TAG, "listener ${this::listener.isInitialized}")
+    }
+
+    constructor(
+        context: Context,
+        attrs: AttributeSet?
+    ) : super(context, attrs) {
         init(attrs)
         initLayout()
     }
 
     private fun init(attrs: AttributeSet?) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomCamera)
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CCMultiple)
         try {
             mainLayoutId = R.layout.custom_camera
-            showSnapButton = typedArray.getBoolean(R.styleable.CustomCamera_showSnapButton, false)
-            snapButtonColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
-            snapButtonSelectedColor = typedArray.getColor(R.styleable.CustomCamera_snapButtonSelectedColor, Color.parseColor("#CB0000"))
+            showSnapButton = typedArray.getBoolean(R.styleable.CCMultiple_showSnapButton, false)
+            snapButtonColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
+            snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
+            showPreviewScreen = typedArray.getBoolean(R.styleable.CCMultiple_showPreviewScreen, false)
         } finally {
             typedArray.recycle()
         }
@@ -95,6 +110,21 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProvider = cameraProviderFuture.get()
+
+//        val cResolver: ContentResolver = context.contentResolver
+//
+//        if (!Settings.System.canWrite(context))
+//            context.startActivity(Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS))
+//
+//        Settings.System.putInt(cResolver, Settings.System.SCREEN_BRIGHTNESS, 1023)
+//
+//
+//        val curBrightnessValue = Settings.System.getInt(
+//            context.contentResolver,
+//            Settings.System.SCREEN_BRIGHTNESS
+//        )
+//
+//        Log.d(TAG, curBrightnessValue.toString())
 
         startCamera()
 
@@ -125,8 +155,13 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 //            }
             when (imageCapture?.flashMode) {
                 ImageCapture.FLASH_MODE_ON -> {
-                    Glide.with(context).load(R.drawable.ic_flash_auto).into(flashToggle)
-                    imageCapture?.flashMode = ImageCapture.FLASH_MODE_AUTO
+                    if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+                        Glide.with(context).load(R.drawable.ic_flash_off).into(flashToggle)
+                        imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
+                    } else {
+                        Glide.with(context).load(R.drawable.ic_flash_auto).into(flashToggle)
+                        imageCapture?.flashMode = ImageCapture.FLASH_MODE_AUTO
+                    }
                 }
                 ImageCapture.FLASH_MODE_OFF -> {
                     Glide.with(context).load(R.drawable.ic_flash_on).into(flashToggle)
@@ -146,7 +181,17 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                 }
                 CameraSelector.DEFAULT_FRONT_CAMERA -> lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
             }
+            setDefaultFlashMode()
             startCamera()
+
+        }
+
+        confirmSelections.setOnClickListener {
+            if (showPreviewScreen) {
+
+            } else {
+                listener.onConfirmImages(imageArrayList)
+            }
         }
 
         captureImage.setOnTouchListener { view, motionEvent ->
@@ -194,6 +239,21 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             }
         }
 
+    }
+
+    fun setBrightness(progress: Int): PorterDuffColorFilter? {
+        return if (progress >= 100) {
+            val value = (progress - 100) * 255 / 100
+            PorterDuffColorFilter(Color.argb(value, 255, 255, 255), PorterDuff.Mode.SRC_OVER)
+        } else {
+            val value = (100 - progress) * 255 / 100
+            PorterDuffColorFilter(Color.argb(value, 0, 0, 0), PorterDuff.Mode.SRC_ATOP)
+        }
+    }
+
+    private fun setDefaultFlashMode() {
+        Glide.with(context).load(R.drawable.ic_flash_off).into(flashToggle)
+        imageCapture?.flashMode = ImageCapture.FLASH_MODE_OFF
     }
 
     private fun startCamera() {
@@ -246,6 +306,10 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture?.flashMode == ImageCapture.FLASH_MODE_ON) {
+            frontFlash.makeVisible()
+        }
+
         // Create time-stamped output file to hold the image
 //        val photoFile = File(
 //            outputDirectory,
@@ -286,6 +350,7 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                             }
                             customCameraAdapter.addData(rotatedBitmap)
                             imageArrayList.add(rotatedBitmap)
+                            frontFlash.makeGone()
                             val atTop = !imageRecyclerView.canScrollVertically(-1)
 
                             if (atTop) {
@@ -348,6 +413,11 @@ class CustomCamera : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             File(it, "somename").apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else context.filesDir
+    }
+
+    interface CustomCamera {
+        fun onConfirmClicked()
+        fun onConfirmImages(imageArrayList: MutableList<Bitmap?>)
     }
 
     companion object {

@@ -5,6 +5,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.util.Size
 import android.view.Display
+import android.view.View
 import kotlin.math.max
 import kotlin.math.min
 
@@ -59,4 +60,12 @@ fun <T>getPreviewOutputSize(
 
     // Then, get the largest output size that is smaller or equal than our max size
     return validSizes.first { it.long <= maxSize.long && it.short <= maxSize.short }.size
+}
+
+fun View.makeVisible() {
+    this.visibility = View.VISIBLE
+}
+
+fun View.makeGone() {
+    this.visibility = View.GONE
 }

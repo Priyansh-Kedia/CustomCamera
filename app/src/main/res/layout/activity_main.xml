@@ -6,10 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.kedia.customcamera.CustomCamera
+    <com.kedia.customcamera.CCMultiple
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:showSnapButton="true"
-        app:snapButtonColor="#fff" />
+        app:snapButtonColor="@color/colorAccent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
