@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.*
 import android.hardware.Camera
@@ -14,10 +15,13 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,43 +40,36 @@ import java.util.concurrent.ExecutorService
 
 class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
-    @LayoutRes
-    private var mainLayoutId = 0
 
-    private var snapButtonColor: Int = context.resources.getColor(R.color.cardview_light_background)
-    private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
-    private var showSnapButton: Boolean = false
-    private var showPreviewScreen: Boolean = false
 
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-    private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
-
     private lateinit var listener: CustomCamera
-
     private lateinit var preview: Preview
-    private lateinit var gestureDetector: GestureDetector
-
-    private lateinit var surfaceHolder: SurfaceHolder
-
-
     private lateinit var jpegCallback: Camera.PictureCallback
-
     private lateinit var cameraExecutor: ExecutorService
-
     private lateinit var outputDirectory: File
-
     private lateinit var camera: androidx.camera.core.Camera
     private lateinit var cameraSelector: CameraSelector
-
-    private var startTime = System.currentTimeMillis()
-    private var clickCount = 0
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
 
+    @LayoutRes
+    private var mainLayoutId = 0
+    private var startTime = System.currentTimeMillis()
+    private var clickCount = 0
+    private var lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+    private var isPermissionGranted = ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
+    private var numberOfTimesChecked = 0
+
+    private var snapButtonColor: Int = context.resources.getColor(R.color.cardview_light_background)
+    private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
+    private var showSnapButton: Boolean = false
+    private var showPreviewScreen: Boolean = false
     private var imageCapture: ImageCapture? = null
+    private var showNoPermissionToast = false
 
     constructor(
         context: Context
@@ -100,6 +97,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             snapButtonColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
             snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
             showPreviewScreen = typedArray.getBoolean(R.styleable.CCMultiple_showPreviewScreen, false)
+            showNoPermissionToast = typedArray.getBoolean(R.styleable.CCMultiple_showNoPermissionToast, false)
         } finally {
             typedArray.recycle()
         }
@@ -112,13 +110,57 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
+        checkRequirements()
+
+    }
+
+    private fun checkRequirements() {
+        if (isPermissionGranted)
+            init()
+        else {
+            numberOfTimesChecked += 1
+            requirePermission()
+        }
+    }
+
+    private fun requirePermission() {
+        ActivityCompat.requestPermissions(context as Activity, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+    }
+
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        isPermissionGranted = ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
+        if (numberOfTimesChecked < 3 && !isPermissionGranted)
+            checkRequirements()
+        else {
+            if (numberOfTimesChecked >= 3 && !isPermissionGranted && hasWindowFocus) {
+                if (showNoPermissionToast) {
+                    Toast.makeText(context,"You need to grant permission to access camera",Toast.LENGTH_SHORT).show()
+                    Log.e(TAG, "Camera permission declined")
+                }
+                else
+                    Log.e(TAG, "Camera permission declined")
+            }
+            else {
+                if (isPermissionGranted)
+                    setCamera()
+            }
+        }
+    }
+
+    private fun checkPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun setCamera() {
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProvider = cameraProviderFuture.get()
 
-
-
         startCamera()
+    }
 
+    private fun init() {
+        setCamera()
 
         imageRecyclerView.apply {
             adapter = customCameraAdapter
@@ -133,7 +175,6 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         }
 
         setListeners()
-
     }
 
     private fun setListeners() {
@@ -382,7 +423,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     }
 
     companion object {
-        private const val TAG = "CameraXBasic"
+        private const val TAG = "CustomCamera"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
