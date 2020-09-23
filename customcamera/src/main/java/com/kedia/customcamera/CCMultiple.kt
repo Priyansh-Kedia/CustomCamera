@@ -225,11 +225,11 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         }
     }
 
-    private fun changeBrightness(type: SCREENBRIGHTNESS) {
+    private fun changeBrightness(type: BRIGHTNESS) {
         if (context is ContextWrapper) {
             //     val context1 = (context as ContextWrapper).baseContext as Activity
             val attrs = (context as Activity).window.attributes
-            attrs.screenBrightness = if (type == SCREENBRIGHTNESS.HIGH) 1f else -1f
+            attrs.screenBrightness = if (type == BRIGHTNESS.HIGH) 1f else -1f
             (context as Activity).window.attributes = attrs
         }
     }
@@ -291,7 +291,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture?.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
-            changeBrightness(SCREENBRIGHTNESS.HIGH)
+            changeBrightness(BRIGHTNESS.HIGH)
         }
 
         imageCapture.takePicture(ContextCompat.getMainExecutor(context),object : ImageCapture.OnImageCapturedCallback() {
@@ -308,7 +308,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
-                            changeBrightness(SCREENBRIGHTNESS.LOW)
+                            changeBrightness(BRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
                             imageArrayList.add(rotatedBitmap)
                             frontFlash.makeGone()
@@ -390,7 +390,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
-    enum class SCREENBRIGHTNESS(val type: String) {
+    enum class BRIGHTNESS(val type: String) {
         HIGH("HIGH"),
         LOW("LOW")
     }
