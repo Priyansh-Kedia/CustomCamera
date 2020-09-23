@@ -112,24 +112,10 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
-        Log.d(TAG, "init ${this::listener.isInitialized}")
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProvider = cameraProviderFuture.get()
 
-//        val cResolver: ContentResolver = context.contentResolver
-//
-//        if (!Settings.System.canWrite(context))
-//            context.startActivity(Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS))
-//
-//        Settings.System.putInt(cResolver, Settings.System.SCREEN_BRIGHTNESS, 1023)
-//
-//
-//        val curBrightnessValue = Settings.System.getInt(
-//            context.contentResolver,
-//            Settings.System.SCREEN_BRIGHTNESS
-//        )
-//
-//        Log.d(TAG, curBrightnessValue.toString())
+
 
         startCamera()
 
@@ -146,18 +132,12 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
 
-        //        outputDirectory = getOutputDirectory()
-//        cameraExecutor = Executors.newSingleThreadExecutor()
+        setListeners()
 
+    }
+
+    private fun setListeners() {
         flashToggle.setOnClickListener {
-//            if (camera.cameraInfo.torchState.value == TorchState.ON) {
-//                Glide.with(context).load(R.drawable.ic_flash_off).into(flashToggle)
-//                camera.cameraControl.enableTorch(false)
-//            } else {
-//                Glide.with(context).load(R.drawable.ic_flash_on).into(flashToggle)
-////                camera.cameraControl.enableTorch(true)
-//                imageCapture?.flashMode = ImageCapture.FLASH_MODE_ON
-//            }
             when (imageCapture?.flashMode) {
                 ImageCapture.FLASH_MODE_ON -> {
                     if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
@@ -243,16 +223,13 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                 }
             }
         }
-
     }
 
-    private fun changeBrightness(type: SCREEN_BRIGHTNESS) {
+    private fun changeBrightness(type: SCREENBRIGHTNESS) {
         if (context is ContextWrapper) {
             //     val context1 = (context as ContextWrapper).baseContext as Activity
             val attrs = (context as Activity).window.attributes
-            Log.d(TAG, "before ${attrs.screenBrightness}")
-            attrs.screenBrightness = if (type == SCREEN_BRIGHTNESS.HIGH) 1f else -1f
-            Log.d(TAG, "called ${attrs.screenBrightness}")
+            attrs.screenBrightness = if (type == SCREENBRIGHTNESS.HIGH) 1f else -1f
             (context as Activity).window.attributes = attrs
         }
     }
@@ -314,33 +291,9 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture?.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
-            changeBrightness(SCREEN_BRIGHTNESS.HIGH)
+            changeBrightness(SCREENBRIGHTNESS.HIGH)
         }
 
-        // Create time-stamped output file to hold the image
-//        val photoFile = File(
-//            outputDirectory,
-//            SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()
-//            ).format(System.currentTimeMillis()) + ".jpg")
-//
-//        // Create output options object which contains file + metadata
-//        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-//        Log.d(TAG, outputOptions.toString() + "    +++   " + photoFile.absoluteFile)
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
-//        imageCapture.takePicture(
-//            outputOptions, ContextCompat.getMainExecutor(context), object : ImageCapture.OnImageSavedCallback {
-//                override fun onError(exc: ImageCaptureException) {
-//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-//                }
-//
-//                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-//                    val savedUri = Uri.fromFile(photoFile)
-//                    val msg = "Photo capture succeeded: $savedUri"
-//
-//                    Log.d(TAG, msg)
-//                }
-//            })
         imageCapture.takePicture(ContextCompat.getMainExecutor(context),object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 // Use the image, then make sure to close it.
@@ -355,7 +308,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
-                            changeBrightness(SCREEN_BRIGHTNESS.LOW)
+                            changeBrightness(SCREENBRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
                             imageArrayList.add(rotatedBitmap)
                             frontFlash.makeGone()
@@ -437,7 +390,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
-    enum class SCREEN_BRIGHTNESS(val type: String) {
+    enum class SCREENBRIGHTNESS(val type: String) {
         HIGH("HIGH"),
         LOW("LOW")
     }
