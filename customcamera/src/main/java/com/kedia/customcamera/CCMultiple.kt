@@ -112,13 +112,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
-        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-        cameraProvider = cameraProviderFuture.get()
-
-
-
-        startCamera()
-
+        setCamera()
 
         imageRecyclerView.apply {
             adapter = customCameraAdapter
@@ -134,6 +128,13 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
         setListeners()
 
+    }
+
+    private fun setCamera() {
+        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProvider = cameraProviderFuture.get()
+
+        startCamera()
     }
 
     private fun setListeners() {
