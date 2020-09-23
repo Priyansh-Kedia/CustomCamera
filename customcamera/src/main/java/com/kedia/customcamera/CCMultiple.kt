@@ -143,7 +143,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             }
             else {
                 if (isPermissionGranted)
-                    setCamera()
+                    init()
             }
         }
     }
@@ -162,6 +162,8 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private fun init() {
         setCamera()
 
+        Log.d(TAG, "called after")
+
         imageRecyclerView.apply {
             adapter = customCameraAdapter
             layoutManager = linearLayoutManager
@@ -173,6 +175,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             isVisible = showSnapButton
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
+        Log.d(TAG, "called after")
 
         setListeners()
     }
