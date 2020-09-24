@@ -26,6 +26,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="20dp"
+        android:visibility="gone"
         android:background="@drawable/capture_button_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,7 +38,7 @@
         android:id="@+id/flashToggle"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:elevation="5dp"
+        android:scaleType="centerCrop"
         android:src="@drawable/ic_flash_off"
         app:layout_constraintBottom_toBottomOf="@id/captureImage"
         app:layout_constraintEnd_toStartOf="@id/captureImage"
@@ -49,7 +50,7 @@
         android:id="@+id/rotateCamera"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:elevation="5dp"
+        android:scaleType="centerCrop"
         android:src="@drawable/ic_rotate_camera"
         app:layout_constraintBottom_toBottomOf="@id/captureImage"
         app:layout_constraintEnd_toEndOf="parent"
@@ -87,5 +88,66 @@
         app:layout_constraintVertical_bias="0.8"
         tools:itemCount="5"
         tools:listitem="@layout/item_image" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/confirmSelections"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="35dp"
+        android:background="@drawable/capturing_image_ring"
+        android:backgroundTint="#02AF9C"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/imageRecyclerView"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/tickImage"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_tick_mark"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#fff" />
+
+        <TextView
+            android:id="@+id/imageCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12"
+            android:textColor="#fff"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.8" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/frontFlash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFF0D1"
+        android:visibility="gone" />
+
+    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent">-->
+    <!--        -->
+    <!--        <ImageView-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="0dp"-->
+    <!--            app:layout_constraintTop_toTopOf="parent"-->
+    <!--            app:layout_constraintStart_toStartOf="parent"-->
+    <!--            app:layout_constraintEnd_toEndOf="parent"-->
+    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--            android:layout_marginBottom="50dp" />-->
+    <!--        -->
+    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
