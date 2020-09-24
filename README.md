@@ -1,9 +1,9 @@
 # CustomCamera
-Custom Camera library
+[![](https://jitpack.io/v/Priyansh-Kedia/CustomCamera.svg)](https://jitpack.io/#Priyansh-Kedia/CustomCamera)
+
 
 This library can be used to access the latest CameraX to use for custom functions and multiple image clicks in Android
 
-[![](https://jitpack.io/v/Priyansh-Kedia/CustomCamera.svg)](https://jitpack.io/#Priyansh-Kedia/CustomCamera)
 
 Add it in your root build.gradle at the end of repositories:
 
