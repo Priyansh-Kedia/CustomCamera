@@ -7,16 +7,16 @@ This library can be used to access the latest CameraX to use for custom function
 
 Add it in your root build.gradle at the end of repositories:
 
-allprojects {
-		repositories {
+		allprojects {
+			repositories {
 			...
-			maven { url 'https://jitpack.io' }
+				maven { url 'https://jitpack.io' }
+			}
 		}
-	}
 
 
 Add the dependency
 
-dependencies {
-	   implementation 'com.github.Priyansh-Kedia:CustomCamera:1.0'
-}
+	dependencies {
+		   implementation 'com.github.Priyansh-Kedia:CustomCamera:1.0'
+		}
