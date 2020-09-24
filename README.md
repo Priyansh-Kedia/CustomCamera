@@ -20,3 +20,11 @@ Add the dependency
 	dependencies {
 		   implementation 'com.github.Priyansh-Kedia:CustomCamera:1.0'
 		}
+
+
+
+
+
+### Found this library useful? :heart:
+
+Support it by joining [stargazers](https://github.com/Priyansh-Kedia/CustomCamera/stargazers) for this repository. :star2:
