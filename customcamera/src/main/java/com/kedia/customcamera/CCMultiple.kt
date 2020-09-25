@@ -2,18 +2,20 @@ package com.kedia.customcamera
 
 import android.Manifest
 import android.app.Activity
+import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Matrix
 import android.hardware.Camera
 import android.util.AttributeSet
 import android.util.Log
-import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.SurfaceHolder
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
@@ -21,12 +23,13 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
+import com.kedia.customcamera.utils.getBitmap
+import com.kedia.customcamera.utils.getUri
 import com.kedia.customcamera.utils.makeGone
 import com.kedia.customcamera.utils.makeVisible
 import kotlinx.android.synthetic.main.custom_camera.view.*
@@ -352,6 +355,10 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
+//                            val uri = getUri(context, rotatedBitmap!!)
+//                            Log.d(TAG, uri.toString())
+//                            val bitmap: Bitmap? = getBitmap(context, uri!!)
+//                            Log.d(TAG, bitmap.toString())
                             changeBrightness(BRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
                             imageArrayList.add(rotatedBitmap)

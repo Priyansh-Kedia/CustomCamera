@@ -1,11 +1,17 @@
 package com.kedia.customcamera.utils
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.params.StreamConfigurationMap
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.Size
 import android.view.Display
 import android.view.View
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.math.max
 import kotlin.math.min
 
@@ -68,4 +74,33 @@ fun View.makeVisible() {
 
 fun View.makeGone() {
     this.visibility = View.GONE
+}
+
+fun getBitmap(context: Context, uri: Uri): Bitmap? {
+    try {
+        val bitmap: Bitmap? = generateBitmap(context, uri)
+        context.contentResolver.delete(uri, null, null)
+        return bitmap
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return null
+}
+
+@Throws(IOException::class)
+fun generateBitmap(context: Context, uri: Uri?): Bitmap? {
+    return MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+}
+
+fun getUri(context: Context, bitmap: Bitmap): Uri? {
+    val bytes = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+    val path = MediaStore.Images.Media.insertImage(
+        context.contentResolver,
+        bitmap,
+        "IMG_" + System.currentTimeMillis(),
+        null
+    )
+   // bitmap.recycle()
+    return Uri.parse(path)
 }

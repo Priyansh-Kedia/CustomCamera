@@ -49,4 +49,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha16"
+
+    // Custom Camera
+   // implementation 'com.github.Priyansh-Kedia:CustomCamera:1.0'
 }
