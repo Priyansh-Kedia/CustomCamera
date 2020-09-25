@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    app:behavior_peekHeight="200dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <RelativeLayout
+        android:id="@+id/peekView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/peekRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_alignParentTop="true" />
+
+        <FrameLayout
+            android:id="@+id/captureImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_below="@+id/peekRecyclerView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/capture_button_selector"
+            android:visibility="gone" />
+
+
+        <ImageView
+            android:id="@+id/flashToggle"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@id/peekRecyclerView"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="30dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_flash_off"
+            app:tint="#fff" />
+
+        <ImageView
+            android:id="@+id/rotateCamera"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@+id/peekRecyclerView"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="20dp"
+            android:padding="5dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_rotate_camera"
+            app:tint="#fff" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/collapsedView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0"
+        android:background="#fff"
+
+        >
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="20dp"
+            android:src="@drawable/ic_tick_mark"
+
+            />
+
+        <ImageView
+            android:id="@+id/selectButton"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_margin="20dp"
+
+            />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/mainRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/backButton" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

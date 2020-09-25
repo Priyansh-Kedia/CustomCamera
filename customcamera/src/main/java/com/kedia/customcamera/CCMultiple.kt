@@ -16,6 +16,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
@@ -27,11 +28,13 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.getBitmap
 import com.kedia.customcamera.utils.getUri
 import com.kedia.customcamera.utils.makeGone
 import com.kedia.customcamera.utils.makeVisible
+import kotlinx.android.synthetic.main.bottom_sheet.view.*
 import kotlinx.android.synthetic.main.custom_camera.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -181,6 +184,38 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         Log.d(TAG, "called after")
 
         setListeners()
+
+        setupBottomSheet()
+    }
+
+    private fun setupBottomSheet() {
+//        val sheetBehavior = BottomSheetBehavior.from(bottom_sheet)
+//        sheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+//            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+//                peekView.alpha = 1.0f-slideOffset
+//                collapsedView.alpha = slideOffset
+//            }
+//
+//            override fun onStateChanged(bottomSheet: View, newState: Int) {
+//                when (newState) {
+//                    BottomSheetBehavior.STATE_HIDDEN -> {}
+//                    BottomSheetBehavior.STATE_EXPANDED -> {
+//                        mainRecyclerView.suppressLayout(false)
+//                        sheetBehavior.isDraggable = false
+//                    }
+//                    BottomSheetBehavior.STATE_COLLAPSED -> {
+//                        sheetBehavior.isDraggable = true
+//                    }
+//                    BottomSheetBehavior.STATE_DRAGGING -> {
+//                        mainRecyclerView.suppressLayout(true)
+//                    }
+//                    BottomSheetBehavior.STATE_SETTLING -> {
+//
+//                    }
+//                }
+//            }
+//
+//        })
     }
 
     private fun setListeners() {
