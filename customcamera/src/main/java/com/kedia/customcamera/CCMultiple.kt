@@ -2,7 +2,6 @@ package com.kedia.customcamera
 
 import android.Manifest
 import android.app.Activity
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
@@ -28,8 +27,6 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
-import com.kedia.customcamera.utils.getBitmap
-import com.kedia.customcamera.utils.getUri
 import com.kedia.customcamera.utils.makeGone
 import com.kedia.customcamera.utils.makeVisible
 import kotlinx.android.synthetic.main.custom_camera.view.*
@@ -300,6 +297,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
 
             imageCapture = ImageCapture.Builder()
                 .build()
+
 
             try {
                 // Unbind use cases before rebinding
