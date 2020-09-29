@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -11,6 +12,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.hardware.Camera
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +21,7 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
@@ -55,6 +59,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+    private val GALLERY_IMAGE_PICKER = 1
 
     @LayoutRes
     private var mainLayoutId = 0
@@ -70,6 +75,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private var showPreviewScreen: Boolean = false
     private var imageCapture: ImageCapture? = null
     private var showNoPermissionToast = false
+
 
     constructor(
         context: Context
@@ -111,6 +117,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
         checkRequirements()
+        Log.d(TAG, getPath().toString())
 
     }
 
@@ -267,6 +274,10 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
                 }
             }
         }
+
+        gallery.setOnClickListener {
+            listener.onGalleryClicked()
+        }
     }
 
     private fun changeBrightness(type: BRIGHTNESS) {
@@ -401,6 +412,10 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         return rotatedImage
     }
 
+    fun getPath(): Uri? {
+        return MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+
     override fun getLifecycle(): Lifecycle {
         val lifecycleRegistry = LifecycleRegistry(this);
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
@@ -426,8 +441,8 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     }
 
     interface CustomCamera {
-        fun onConfirmClicked()
         fun onConfirmImages(imageArrayList: MutableList<Bitmap?>)
+        fun onGalleryClicked()
     }
 
     companion object {

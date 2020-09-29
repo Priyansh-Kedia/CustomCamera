@@ -14,12 +14,12 @@ class MainActivity : AppCompatActivity(), CCMultiple.CustomCamera {
         cc.setListener(this)
     }
 
-    override fun onConfirmClicked() {
-
-    }
-
     override fun onConfirmImages(imageArrayList: MutableList<Bitmap?>) {
         Log.d("TAG!!!!", "$imageArrayList ${imageArrayList.size}")
+    }
+
+    override fun onGalleryClicked() {
+        Log.d("TAG!!!!","clicked ")
     }
 
 

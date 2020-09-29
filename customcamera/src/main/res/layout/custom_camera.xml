@@ -26,8 +26,8 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="20dp"
-        android:visibility="gone"
         android:background="@drawable/capture_button_selector"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -52,6 +52,20 @@
         android:layout_height="30dp"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_rotate_camera"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/captureImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/captureImage"
+        app:layout_constraintTop_toTopOf="@id/captureImage"
+        app:tint="#fff" />
+
+    <ImageView
+        android:id="@+id/gallery"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_gallery_icon"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@id/captureImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/captureImage"
@@ -93,7 +107,7 @@
         android:id="@+id/confirmSelections"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="30dp"
         android:layout_marginBottom="35dp"
         android:background="@drawable/capturing_image_ring"
         android:backgroundTint="#02AF9C"
@@ -112,6 +126,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#fff" />
+
 
         <TextView
             android:id="@+id/imageCount"
