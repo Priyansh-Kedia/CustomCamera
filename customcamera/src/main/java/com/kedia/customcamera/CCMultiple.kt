@@ -283,6 +283,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private fun changeBrightness(type: BRIGHTNESS) {
         if (context is ContextWrapper) {
             //     val context1 = (context as ContextWrapper).baseContext as Activity
+
             val attrs = (context as Activity).window.attributes
             attrs.screenBrightness = if (type == BRIGHTNESS.HIGH) 1f else -1f
             (context as Activity).window.attributes = attrs
