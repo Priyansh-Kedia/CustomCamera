@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
@@ -52,6 +53,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
 
 
+
     def camerax_version = "1.0.0-beta09"
     // CameraX core library using camera2 implementation
     implementation "androidx.camera:camera-camera2:$camerax_version"
@@ -65,6 +67,8 @@ dependencies {
 
     // Viewmodelscope
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha07"
+}
 
-
+repositories {
+    mavenCentral()
 }

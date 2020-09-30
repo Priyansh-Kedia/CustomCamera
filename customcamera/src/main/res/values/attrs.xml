@@ -6,5 +6,6 @@
         <attr name="snapButtonSelectedColor" format="color" />
         <attr name="showPreviewScreen" format="boolean" />
         <attr name="showNoPermissionToast" format="boolean" />
+        <attr name="showImageDeselectionOption" format="boolean" />
     </declare-styleable>
 </resources>

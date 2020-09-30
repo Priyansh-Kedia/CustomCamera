@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.makeGone
@@ -38,7 +39,7 @@ import java.lang.Math.abs
 import java.util.concurrent.ExecutorService
 
 
-class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
+class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
 
 
 
@@ -53,7 +54,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private lateinit var cameraSelector: CameraSelector
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
-    private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf()) }
+    private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf(), this) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
 
     @LayoutRes
@@ -70,6 +71,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private var showPreviewScreen: Boolean = false
     private var imageCapture: ImageCapture? = null
     private var showNoPermissionToast = false
+    private var showImageDeselectionOption = false
 
     constructor(
         context: Context
@@ -98,6 +100,7 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
             snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
             showPreviewScreen = typedArray.getBoolean(R.styleable.CCMultiple_showPreviewScreen, false)
             showNoPermissionToast = typedArray.getBoolean(R.styleable.CCMultiple_showNoPermissionToast, false)
+            showImageDeselectionOption = typedArray.getBoolean(R.styleable.CCMultiple_showImageDeselectionOption, false)
         } finally {
             typedArray.recycle()
         }
@@ -162,20 +165,17 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private fun init() {
         setCamera()
 
-        Log.d(TAG, "called after")
 
         imageRecyclerView.apply {
             adapter = customCameraAdapter
             layoutManager = linearLayoutManager
         }
 
-        lifecycle.addObserver(this)
 
         captureImage.apply {
             isVisible = showSnapButton
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
-        Log.d(TAG, "called after")
 
         setListeners()
     }
@@ -272,7 +272,6 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
     private fun changeBrightness(type: BRIGHTNESS) {
         if (context is ContextWrapper) {
             //     val context1 = (context as ContextWrapper).baseContext as Activity
-
             val attrs = (context as Activity).window.attributes
             attrs.screenBrightness = if (type == BRIGHTNESS.HIGH) 1f else -1f
             (context as Activity).window.attributes = attrs
@@ -408,16 +407,18 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         return lifecycleRegistry
     }
 
-    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-
-    }
-
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         imageArrayList.clear()
         cameraProvider.unbindAll()
 
     }
+
+
+    override fun onCancelClicked(adapterPosition: Int) {
+        customCameraAdapter.removeItem(adapterPosition)
+    }
+
 
     private fun getOutputDirectory(): File {
         val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
@@ -444,5 +445,4 @@ class CCMultiple : FrameLayout, LifecycleOwner, LifecycleEventObserver {
         HIGH("HIGH"),
         LOW("LOW")
     }
-
 }

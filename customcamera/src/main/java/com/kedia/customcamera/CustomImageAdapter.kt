@@ -11,15 +11,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 
-class CustomImageAdapter(private val context: Context, private val list: MutableList<Bitmap?>) : RecyclerView.Adapter<CustomImageAdapter.ViewHolder>() {
+class CustomImageAdapter(
+    private val context: Context,
+    private val list: MutableList<Bitmap?>,
+    private val listener: Onclick
+) : RecyclerView.Adapter<CustomImageAdapter.ViewHolder>() {
+
+    private var lastPosition: Int = -1
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): CustomImageAdapter.ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false))
     }
-
-    private var lastPosition: Int = -1
 
     override fun getItemCount(): Int {
         return list.size
@@ -28,6 +33,11 @@ class CustomImageAdapter(private val context: Context, private val list: Mutable
     fun addData(bitmap: Bitmap?) {
         list.add(0,bitmap)
         notifyItemInserted(0)
+    }
+
+    fun removeItem(position: Int) {
+        list.removeAt(position)
+        notifyItemRemoved(position)
     }
 
     override fun onBindViewHolder(holder: CustomImageAdapter.ViewHolder, position: Int) {
@@ -49,10 +59,19 @@ class CustomImageAdapter(private val context: Context, private val list: Mutable
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
 
         private val imageView: ImageView = itemView.findViewById(R.id.image)
+        private val cancelImage: ImageView = itemView.findViewById(R.id.cancelImage)
 
         fun bind(item: Bitmap?) {
             Glide.with(context).load(item).into(imageView)
+
+            cancelImage.setOnClickListener {
+
+            }
         }
 
+    }
+
+    interface Onclick {
+        fun onCancelClicked(adapterPosition: Int)
     }
 }
