@@ -63,13 +63,13 @@ class CustomImageAdapter(
             Glide.with(context).load(item).into(imageView)
 
             cancelImage.setOnClickListener {
-                onClick?.onDeleteImageClicked(adapterPosition)
+                onClick?.onDeleteImageClicked(adapterPosition, item)
             }
         }
 
     }
 
     interface CustomAdapterClick {
-        fun onDeleteImageClicked(adapterPosition: Int)
+        fun onDeleteImageClicked(adapterPosition: Int, bitmap: Bitmap?)
     }
 }

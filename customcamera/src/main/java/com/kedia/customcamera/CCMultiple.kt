@@ -427,8 +427,9 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
 
     }
 
-    override fun onDeleteImageClicked(adapterPosition: Int) {
+    override fun onDeleteImageClicked(adapterPosition: Int, bitmap: Bitmap?) {
         customCameraAdapter.removeItem(adapterPosition)
+        imageArrayList.remove(bitmap)
         Log.d(TAG, imageArrayList.toString())
         imageCount.text = "${customCameraAdapter.itemCount}"
         if (customCameraAdapter.itemCount == 0)
