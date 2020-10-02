@@ -224,7 +224,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
             if (showPreviewScreen) {
 
             } else {
-             //   listener.onConfirmImages(imageArrayList)
+                listener.onConfirmImagesClicked(imageArrayList)
             }
         }
 
