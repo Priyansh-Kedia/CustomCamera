@@ -428,7 +428,9 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
     }
 
     override fun onDeleteImageClicked(adapterPosition: Int) {
-        Log.d(TAG, "clicked $adapterPosition")
+        customCameraAdapter.removeItem(adapterPosition)
+        if (customCameraAdapter.itemCount == 0)
+            confirmSelections.makeGone()
     }
 
     private fun getOutputDirectory(): File {
