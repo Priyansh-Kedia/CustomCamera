@@ -429,6 +429,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
 
     override fun onDeleteImageClicked(adapterPosition: Int) {
         customCameraAdapter.removeItem(adapterPosition)
+        imageCount.text = "${customCameraAdapter.itemCount}"
         if (customCameraAdapter.itemCount == 0)
             confirmSelections.makeGone()
     }
