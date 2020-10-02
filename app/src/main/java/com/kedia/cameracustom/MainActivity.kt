@@ -1,9 +1,8 @@
 package com.kedia.cameracustom
 
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.kedia.customcamera.CCMultiple
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -15,12 +14,10 @@ class MainActivity : AppCompatActivity(), CCMultiple.CustomCamera {
     }
 
     override fun onConfirmImages(imageArrayList: MutableList<Bitmap?>) {
-        Log.d("TAG!!!!", "$imageArrayList ${imageArrayList.size}")
+        TODO("Not yet implemented")
     }
 
     override fun onGalleryClicked() {
-        Log.d("TAG!!!!","clicked ")
+        TODO("Not yet implemented")
     }
-
-
 }
