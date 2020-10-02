@@ -1,19 +1,17 @@
 package com.kedia.cameracustom
 
 import android.graphics.Bitmap
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
 import com.kedia.customcamera.CCMultiple
-import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), CCMultiple.CustomCamera {
+class Main2Activity : AppCompatActivity(), CCMultiple.CustomMultiple {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        cc.setListener(this)
+        setContentView(R.layout.activity_main2)
     }
 
-    override fun onConfirmImages(imageArrayList: MutableList<Bitmap?>) {
+    override fun onConfirmImagesClicked(imageArrayList: MutableList<Bitmap?>) {
         TODO("Not yet implemented")
     }
 

@@ -4,14 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".Main2Activity">
+
 
     <com.kedia.customcamera.CCMultiple
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:showSnapButton="true"
-        app:showNoPermissionToast="true"
-        android:id="@+id/cc"
-        app:snapButtonColor="@color/colorAccent" />
+        android:id="@+id/cc" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
