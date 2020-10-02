@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide
 class CustomImageAdapter(
     private val context: Context,
     private val list: MutableList<Bitmap?>,
-    private val listener: Onclick
+    private val onClick: CustomAdapterClick? = null
 ) : RecyclerView.Adapter<CustomImageAdapter.ViewHolder>() {
 
     private var lastPosition: Int = -1
@@ -41,10 +41,8 @@ class CustomImageAdapter(
     }
 
     override fun onBindViewHolder(holder: CustomImageAdapter.ViewHolder, position: Int) {
-        if (holder is ViewHolder) {
-            holder.bind(list[position])
-            setAnimation(holder.itemView, position)
-        }
+        holder.bind(list[position])
+        setAnimation(holder.itemView, position)
     }
 
     private fun setAnimation(viewToAnimate: View, position: Int) {
@@ -65,13 +63,13 @@ class CustomImageAdapter(
             Glide.with(context).load(item).into(imageView)
 
             cancelImage.setOnClickListener {
-
+                onClick?.onDeleteImageClicked(adapterPosition)
             }
         }
 
     }
 
-    interface Onclick {
-        fun onCancelClicked(adapterPosition: Int)
+    interface CustomAdapterClick {
+        fun onDeleteImageClicked(adapterPosition: Int)
     }
 }

@@ -10,7 +10,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
-import android.hardware.Camera
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.makeGone
@@ -39,17 +37,17 @@ import java.lang.Math.abs
 import java.util.concurrent.ExecutorService
 
 
-class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
+class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
 
 
 
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-    private lateinit var listener: CustomCamera
+    private lateinit var listener: CustomMultiple
     private lateinit var preview: Preview
-    private lateinit var jpegCallback: Camera.PictureCallback
-    private lateinit var cameraExecutor: ExecutorService
-    private lateinit var outputDirectory: File
+//    private lateinit var jpegCallback: Camera.PictureCallback
+//    private lateinit var cameraExecutor: ExecutorService
+//    private lateinit var outputDirectory: File
     private lateinit var camera: androidx.camera.core.Camera
     private lateinit var cameraSelector: CameraSelector
 
@@ -87,7 +85,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
         initLayout()
     }
 
-    fun setListener(listener: CustomCamera) {
+    fun setListener(listener: CustomMultiple) {
         this.listener = listener
     }
 
@@ -219,7 +217,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
             if (showPreviewScreen) {
 
             } else {
-                listener.onConfirmImages(imageArrayList)
+             //   listener.onConfirmImages(imageArrayList)
             }
         }
 
@@ -242,7 +240,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
             }
         }
 
-        surfaceView.setOnTouchListener { view, motionEvent ->
+        surfaceView.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (clickCount == 2) {
@@ -271,7 +269,6 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
 
     private fun changeBrightness(type: BRIGHTNESS) {
         if (context is ContextWrapper) {
-            //     val context1 = (context as ContextWrapper).baseContext as Activity
             val attrs = (context as Activity).window.attributes
             attrs.screenBrightness = if (type == BRIGHTNESS.HIGH) 1f else -1f
             (context as Activity).window.attributes = attrs
@@ -334,7 +331,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture?.flashMode == ImageCapture.FLASH_MODE_ON) {
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
             changeBrightness(BRIGHTNESS.HIGH)
         }
@@ -379,6 +376,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
 
             override fun onError(exception: ImageCaptureException) {
                 val errorType = exception.imageCaptureError
+                println(errorType)
 
             }
         })
@@ -414,22 +412,19 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
 
     }
 
-
-    override fun onCancelClicked(adapterPosition: Int) {
-        customCameraAdapter.removeItem(adapterPosition)
+    override fun onDeleteImageClicked(adapterPosition: Int) {
+        Log.d(TAG, "clicked $adapterPosition")
     }
 
-
     private fun getOutputDirectory(): File {
-        val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
-            File(it, "somename").apply { mkdirs() } }
+        val mediaDir = (context as ContextWrapper).externalMediaDirs.firstOrNull()?.let {
+            File(it, "IMG_").apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else context.filesDir
     }
 
-    interface CustomCamera {
-        fun onConfirmClicked()
-        fun onConfirmImages(imageArrayList: MutableList<Bitmap?>)
+    interface CustomMultiple {
+        fun onConfirmImagesClicked(imageArrayList: MutableList<Bitmap?>)
     }
 
     companion object {
@@ -441,8 +436,8 @@ class CCMultiple : FrameLayout, CustomImageAdapter.Onclick, LifecycleOwner {
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
-    enum class BRIGHTNESS(val type: String) {
-        HIGH("HIGH"),
-        LOW("LOW")
+    enum class BRIGHTNESS {
+        HIGH,
+        LOW
     }
 }

@@ -22,6 +22,7 @@
                 android:layout_height="20dp"
                 android:elevation="1dp"
                 android:scaleType="centerCrop"
+                android:src="@drawable/ic_cross"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:src="@drawable/ic_cross" />
