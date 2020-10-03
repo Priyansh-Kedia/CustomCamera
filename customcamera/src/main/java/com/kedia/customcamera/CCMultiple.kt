@@ -19,6 +19,7 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
@@ -452,7 +453,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
 
     private fun showProgressDialog(message: String?) {
         progressDialogFragment = message?.let { ProgressDialogFragment(it) }
-        val fm: FragmentManager = (context as Fragment).childFragmentManager
+        val fm: FragmentManager = (context as AppCompatActivity).supportFragmentManager
         progressDialogFragment?.show(fm, ProgressDialogFragment::class.java.toString())
     }
 
