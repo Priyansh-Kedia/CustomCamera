@@ -25,7 +25,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -34,7 +33,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
-import com.kedia.customcamera.utils.getBitmap
 import com.kedia.customcamera.utils.getUri
 import com.kedia.customcamera.utils.makeGone
 import com.kedia.customcamera.utils.makeVisible
@@ -62,6 +60,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     private lateinit var cameraSelector: CameraSelector
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
+    private val uriArrayList: MutableList<Uri> = mutableListOf()
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf(), this) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
     private val GALLERY_IMAGE_PICKER = 1
@@ -230,7 +229,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
             if (showPreviewScreen) {
 
             } else {
-                listener.onConfirmImagesClicked(imageArrayList)
+                listener.onConfirmImagesClicked(uriArrayList)
             }
         }
 
@@ -364,7 +363,8 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
 
                         val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
                         val uri = rotatedBitmap?.let { getUri(context, it) }
-                        imageArrayList.add(uri?.let { getBitmap(context, it) })
+                        uri?.let { uriArrayList.add(it) }
+//                        imageArrayList.add(uri?.let { getBitmap(context, it) })
                         withContext(Dispatchers.Main) {
                             dismissDialog()
                             capturedImage.apply {
@@ -463,7 +463,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
 
 
     interface CustomMultiple {
-        fun onConfirmImagesClicked(imageArrayList: MutableList<Bitmap?>)
+        fun onConfirmImagesClicked(imageArrayList: MutableList<Uri>)
         fun onGalleryClicked()
     }
 
