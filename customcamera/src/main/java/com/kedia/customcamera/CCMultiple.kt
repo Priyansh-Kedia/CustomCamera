@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -20,16 +19,22 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
+import com.kedia.customcamera.utils.getBitmap
+import com.kedia.customcamera.utils.getUri
 import com.kedia.customcamera.utils.makeGone
 import com.kedia.customcamera.utils.makeVisible
 import kotlinx.android.synthetic.main.custom_camera.view.*
@@ -38,10 +43,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.Math.abs
-import java.util.concurrent.ExecutorService
 
 
-class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
+open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
 
 
 
@@ -53,6 +57,7 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
 //    private lateinit var cameraExecutor: ExecutorService
 //    private lateinit var outputDirectory: File
     private lateinit var camera: androidx.camera.core.Camera
+    private var progressDialogFragment: ProgressDialogFragment? = null
     private lateinit var cameraSelector: CameraSelector
 
     private val imageArrayList: MutableList<Bitmap?> = mutableListOf()
@@ -352,12 +357,15 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
                 // Use the image, then make sure to close it.
                 val buffer = image.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
-
+                showProgressDialog("Processing")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
 
                         val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+                        val uri = rotatedBitmap?.let { getUri(context, it) }
+                        imageArrayList.add(uri?.let { getBitmap(context, it) })
                         withContext(Dispatchers.Main) {
+                            dismissDialog()
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
@@ -367,7 +375,6 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
 //                            Log.d(TAG, bitmap.toString())
                             changeBrightness(BRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
-                            imageArrayList.add(rotatedBitmap)
                             frontFlash.makeGone()
                             val atTop = !imageRecyclerView.canScrollVertically(-1)
 
@@ -441,6 +448,16 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
             File(it, "IMG_").apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else context.filesDir
+    }
+
+    private fun showProgressDialog(message: String?) {
+        progressDialogFragment = message?.let { ProgressDialogFragment(it) }
+        val fm: FragmentManager = (context as Fragment).childFragmentManager
+        progressDialogFragment?.show(fm, ProgressDialogFragment::class.java.toString())
+    }
+
+    private fun dismissDialog() {
+        progressDialogFragment?.dismissAllowingStateLoss()
     }
 
 
