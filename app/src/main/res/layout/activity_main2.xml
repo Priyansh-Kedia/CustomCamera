@@ -10,6 +10,7 @@
     <com.kedia.customcamera.CCMultiple
         android:layout_width="match_parent"
         app:showSnapButton="true"
+        app:showNoPermissionToast="true"
         android:layout_height="match_parent"
         android:id="@+id/cc" />
 

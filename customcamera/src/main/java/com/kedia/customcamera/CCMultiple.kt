@@ -10,7 +10,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.util.AttributeSet
 import android.util.Log
@@ -19,6 +21,7 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -38,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.InputStream
 import java.lang.Math.abs
 
 
@@ -399,6 +403,26 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
                 logV(exception.localizedMessage)
             }
         })
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun getRotationAngle(decodeByteArray: InputStream) {
+        val exifInterface = ExifInterface(decodeByteArray)
+        val orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> {
+                // Todo() Add rotate method with 90 angle
+            }
+            ExifInterface.ORIENTATION_ROTATE_180 -> {
+                // Todo() Add rotate method with 180 angle
+            }
+            ExifInterface.ORIENTATION_ROTATE_270 -> {
+                // Todo() Add rotate method with 270 angle
+            }
+            ExifInterface.ORIENTATION_NORMAL -> {
+                // Todo() Add rotate method with 0 angle
+            }
+        }
     }
 
     private fun rotateBitmap(decodeByteArray: Bitmap?): Bitmap? {
