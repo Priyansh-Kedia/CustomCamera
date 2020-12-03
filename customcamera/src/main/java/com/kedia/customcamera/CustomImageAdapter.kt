@@ -15,15 +15,16 @@ class CustomImageAdapter(
     private val context: Context,
     private val list: MutableList<Bitmap?>,
     private val onClick: CustomAdapterClick? = null
-) : RecyclerView.Adapter<CustomImageAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<CustomImageAdapter.CustomViewHolder>() {
 
     private var lastPosition: Int = -1
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): CustomImageAdapter.ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_image, parent, false))
+    ): CustomImageAdapter.CustomViewHolder {
+        val view = LayoutInflater.from(context).inflate(R.layout.item_image, parent, false);
+        return CustomViewHolder(view)
     }
 
     override fun getItemCount(): Int {
@@ -40,7 +41,7 @@ class CustomImageAdapter(
         notifyItemRemoved(position)
     }
 
-    override fun onBindViewHolder(holder: CustomImageAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: CustomImageAdapter.CustomViewHolder, position: Int) {
         holder.bind(list[position])
         setAnimation(holder.itemView, position)
     }
@@ -54,7 +55,7 @@ class CustomImageAdapter(
         }
     }
 
-    inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class CustomViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
 
         private val imageView: ImageView = itemView.findViewById(R.id.image)
         private val cancelImage: ImageView = itemView.findViewById(R.id.cancelImage)

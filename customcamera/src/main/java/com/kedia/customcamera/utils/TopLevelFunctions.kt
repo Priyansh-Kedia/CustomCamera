@@ -7,6 +7,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Size
 import android.view.Display
 import android.view.View
@@ -74,6 +75,18 @@ fun View.makeVisible() {
 
 fun View.makeGone() {
     this.visibility = View.GONE
+}
+
+fun log(message: String) {
+    Log.d("CCMultiple", message)
+}
+
+fun logV(message: String) {
+    Log.v("CCMultiple", message)
+}
+
+fun logE(message: String) {
+    Log.e("CCMultiple", message)
 }
 
 fun getBitmap(context: Context, uri: Uri): Bitmap? {

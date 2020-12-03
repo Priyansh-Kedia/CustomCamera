@@ -1,6 +1,7 @@
 package com.kedia.cameracustom
 
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.kedia.customcamera.CCMultiple
@@ -11,11 +12,12 @@ class Main2Activity : AppCompatActivity(), CCMultiple.CustomMultiple {
         setContentView(R.layout.activity_main2)
     }
 
-    override fun onConfirmImagesClicked(imageArrayList: MutableList<Bitmap?>) {
+    override fun onConfirmImagesClicked(imageArrayList: MutableList<Uri>) {
         TODO("Not yet implemented")
     }
 
     override fun onGalleryClicked() {
         TODO("Not yet implemented")
     }
+
 }

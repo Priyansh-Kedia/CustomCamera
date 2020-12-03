@@ -25,7 +25,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -33,9 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
-import com.kedia.customcamera.utils.getUri
-import com.kedia.customcamera.utils.makeGone
-import com.kedia.customcamera.utils.makeVisible
+import com.kedia.customcamera.utils.*
 import kotlinx.android.synthetic.main.custom_camera.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -123,7 +120,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
         checkRequirements()
-        Log.d(TAG, getPath().toString())
+        log(getPath().toString())
 
     }
 
@@ -149,10 +146,10 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
             if (numberOfTimesChecked >= 3 && !isPermissionGranted && hasWindowFocus) {
                 if (showNoPermissionToast) {
                     Toast.makeText(context,"You need to grant permission to access camera",Toast.LENGTH_SHORT).show()
-                    Log.e(TAG, "Camera permission declined")
+                    logE("Camera permission declined")
                 }
                 else
-                    Log.e(TAG, "Camera permission declined")
+                    logE("Camera permission declined")
             }
             else {
                 if (isPermissionGranted)
@@ -166,10 +163,10 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     }
 
     private fun setCamera() {
-        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-        cameraProvider = cameraProviderFuture.get()
+            cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+            cameraProvider = cameraProviderFuture.get()
 
-        startCamera()
+            startCamera()
     }
 
     private fun init() {
@@ -321,7 +318,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
                     this, cameraSelector, preview, imageCapture)
 
             } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                logE("Use case binding failed $exc")
             }
 
         }, ContextCompat.getMainExecutor(context))
@@ -347,6 +344,8 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
+        logV("Capturing image")
+
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
             changeBrightness(BRIGHTNESS.HIGH)
@@ -356,24 +355,20 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
             override fun onCaptureSuccess(image: ImageProxy) {
                 // Use the image, then make sure to close it.
                 val buffer = image.planes[0].buffer
+                val cap = buffer.capacity()
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
-                showProgressDialog("Processing")
+                logV("Bytes taken")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
 
                         val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
                         val uri = rotatedBitmap?.let { getUri(context, it) }
                         uri?.let { uriArrayList.add(it) }
-//                        imageArrayList.add(uri?.let { getBitmap(context, it) })
                         withContext(Dispatchers.Main) {
-                            dismissDialog()
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
-//                            val uri = getUri(context, rotatedBitmap!!)
-//                            Log.d(TAG, uri.toString())
-//                            val bitmap: Bitmap? = getBitmap(context, uri!!)
-//                            Log.d(TAG, bitmap.toString())
+
                             changeBrightness(BRIGHTNESS.LOW)
                             customCameraAdapter.addData(rotatedBitmap)
                             frontFlash.makeGone()
@@ -384,7 +379,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
                             }
                             recaptureImage.isVisible = capturedImage.isVisible
                             confirmSelections.isVisible = true
-                            imageCount.text = "${imageArrayList.size}"
+                            imageCount.text = "${uriArrayList.size}"
                             setButtonsClickable()
                         }
                     }
@@ -395,8 +390,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
 
             override fun onError(exception: ImageCaptureException) {
                 val errorType = exception.imageCaptureError
-                println(errorType)
-
+                logV(exception.localizedMessage)
             }
         })
     }
@@ -438,7 +432,6 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     override fun onDeleteImageClicked(adapterPosition: Int, bitmap: Bitmap?) {
         customCameraAdapter.removeItem(adapterPosition)
         imageArrayList.remove(bitmap)
-        Log.d(TAG, imageArrayList.toString())
         imageCount.text = "${customCameraAdapter.itemCount}"
         if (customCameraAdapter.itemCount == 0)
             confirmSelections.makeGone()
@@ -450,17 +443,6 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else context.filesDir
     }
-
-    private fun showProgressDialog(message: String?) {
-        progressDialogFragment = message?.let { ProgressDialogFragment(it) }
-        val fm: FragmentManager = (context as AppCompatActivity).supportFragmentManager
-        progressDialogFragment?.show(fm, ProgressDialogFragment::class.java.toString())
-    }
-
-    private fun dismissDialog() {
-        progressDialogFragment?.dismissAllowingStateLoss()
-    }
-
 
     interface CustomMultiple {
         fun onConfirmImagesClicked(imageArrayList: MutableList<Uri>)
