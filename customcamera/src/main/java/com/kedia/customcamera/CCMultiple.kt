@@ -226,8 +226,18 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
             if (showPreviewScreen) {
 
             } else {
-                listener.onConfirmImagesClicked(uriArrayList)
+                if (::listener.isInitialized)
+                    listener.onConfirmImagesClicked(uriArrayList)
+                else
+                    logE("The listener has not been initialised")
             }
+        }
+
+        gallery.setOnClickListener {
+            if (::listener.isInitialized)
+                listener.onGalleryClicked()
+            else
+                logE("The listener has not been initialised")
         }
 
         captureImage.setOnTouchListener { view, motionEvent ->
@@ -273,10 +283,6 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
                     return@setOnTouchListener true
                 }
             }
-        }
-
-        gallery.setOnClickListener {
-            listener.onGalleryClicked()
         }
     }
 
