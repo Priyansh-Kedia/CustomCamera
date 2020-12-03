@@ -11,7 +11,10 @@ import android.util.Log
 import android.util.Size
 import android.view.Display
 import android.view.View
+import androidx.core.net.toUri
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.math.max
 import kotlin.math.min
@@ -116,4 +119,27 @@ fun getUri(context: Context, bitmap: Bitmap): Uri? {
     )
    // bitmap.recycle()
     return Uri.parse(path)
+}
+
+private fun saveImage(
+    context: Context,
+    bitmap: Bitmap,
+    folderName: String = "CCImages",
+    fileName: String = "CC${System.currentTimeMillis()}Multiple"
+): Uri? {
+    val pname = context.packageName
+    try {
+        val path = File("/storage/emulated/0/Android/data/$pname/files$folderName")
+        if (!path.exists()) {
+            path.mkdirs()
+        }
+        val outFile = File(path, "$fileName.jpeg")
+        val out = FileOutputStream(outFile)
+        val a = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        out.close()
+        return outFile.toUri()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return Uri.EMPTY
 }
