@@ -2,6 +2,7 @@ package com.kedia.customcamera
 
 import android.Manifest
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
@@ -13,6 +14,7 @@ import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.AttributeSet
 import android.util.Log
@@ -38,9 +40,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.*
 import kotlinx.android.synthetic.main.custom_camera.view.*
+import kotlinx.android.synthetic.main.gallery_bottom_sheet.*
 import kotlinx.android.synthetic.main.gallery_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,7 +54,7 @@ import java.io.InputStream
 import java.lang.Math.abs
 
 
-class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
+class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
 
 
 
@@ -116,7 +120,6 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CCMultiple)
         try {
             mainLayoutId = R.layout.custom_camera
-            bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             showSnapButton = typedArray.getBoolean(R.styleable.CCMultiple_showSnapButton, false)
             snapButtonColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
             snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
@@ -205,8 +208,11 @@ class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Lifecycle
 
         rotateCamera.isVisible = showRotateCamera
 
-        bottomSheetBehavior.peekHeight = resources.getDimensionPixelOffset(peekHeight)
-        bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback)
+        if (::bottomSheetBehavior.isInitialized) {
+            bottomSheetBehavior.peekHeight = resources.getDimensionPixelOffset(peekHeight)
+            bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback)
+        }
+
     }
 
     private val bottomSheetCallback by lazy {
