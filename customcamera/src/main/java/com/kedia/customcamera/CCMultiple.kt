@@ -18,13 +18,16 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.DimenRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -34,9 +37,11 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.*
 import kotlinx.android.synthetic.main.custom_camera.view.*
+import kotlinx.android.synthetic.main.gallery_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,7 +50,7 @@ import java.io.InputStream
 import java.lang.Math.abs
 
 
-open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
+class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
 
 
 
@@ -66,6 +71,8 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
     private val GALLERY_IMAGE_PICKER = 1
 
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
     @LayoutRes
     private var mainLayoutId = 0
     private var startTime = System.currentTimeMillis()
@@ -74,6 +81,9 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     private var isPermissionGranted = ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
     private var numberOfTimesChecked = 0
 
+    @DimenRes
+    private var peekHeight = R.dimen.imagePickerPeekHeight
+
     private var snapButtonColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var showSnapButton: Boolean = false
@@ -81,6 +91,7 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
     private var imageCapture: ImageCapture? = null
     private var showNoPermissionToast = false
     private var showImageDeselectionOption = false
+    private var showRotateCamera = false
 
 
     constructor(
@@ -105,12 +116,14 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CCMultiple)
         try {
             mainLayoutId = R.layout.custom_camera
+            bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             showSnapButton = typedArray.getBoolean(R.styleable.CCMultiple_showSnapButton, false)
             snapButtonColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonColor, context.resources.getColor(R.color.cardview_light_background))
             snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
             showPreviewScreen = typedArray.getBoolean(R.styleable.CCMultiple_showPreviewScreen, false)
             showNoPermissionToast = typedArray.getBoolean(R.styleable.CCMultiple_showNoPermissionToast, false)
             showImageDeselectionOption = typedArray.getBoolean(R.styleable.CCMultiple_showImageDeselectionOption, false)
+            showRotateCamera = typedArray.getBoolean(R.styleable.CCMultiple_showRotateCamera, false)
         } finally {
             typedArray.recycle()
         }
@@ -124,8 +137,6 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
         val view = LayoutInflater.from(context).inflate(mainLayoutId, this)
 
         checkRequirements()
-        log(getPath().toString())
-
     }
 
     private fun checkRequirements() {
@@ -175,8 +186,12 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
 
     private fun init() {
         setCamera()
+        initViews()
 
+        setListeners()
+    }
 
+    private fun initViews() {
         imageRecyclerView.apply {
             adapter = customCameraAdapter
             layoutManager = linearLayoutManager
@@ -188,7 +203,25 @@ open class CCMultiple : FrameLayout, CustomImageAdapter.CustomAdapterClick, Life
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
 
-        setListeners()
+        rotateCamera.isVisible = showRotateCamera
+
+        bottomSheetBehavior.peekHeight = resources.getDimensionPixelOffset(peekHeight)
+        bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback)
+    }
+
+    private val bottomSheetCallback by lazy {
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+
+                }
+            }
+
+        }
     }
 
     private fun setListeners() {

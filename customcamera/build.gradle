@@ -66,6 +66,9 @@ dependencies {
 
     // Viewmodelscope
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-alpha07"
+
+    // Material io
+    implementation 'com.google.android.material:material:1.2.1'
 }
 
 repositories {

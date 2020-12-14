@@ -7,5 +7,6 @@
         <attr name="showPreviewScreen" format="boolean" />
         <attr name="showNoPermissionToast" format="boolean" />
         <attr name="showImageDeselectionOption" format="boolean" />
+        <attr name="showRotateCamera" format="boolean" />
     </declare-styleable>
 </resources>
