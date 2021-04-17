@@ -5,7 +5,6 @@
 
 
 CCMultiple library provides you with the convenience of accessing the camera of your android device using the latest CameraX API, with just a few lines of code. 
-This library provides with customisable features, which provides with a better control over the features.
 
 
 Add it in your root build.gradle at the end of repositories:
@@ -23,7 +22,31 @@ Add the dependency
 	dependencies {
 		   implementation 'com.github.Priyansh-Kedia:CustomCamera:<latest_version>'
 		}
+		
 
+
+You can include the camera directly in the XML code, by 
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"  
+	 xmlns:app="http://schemas.android.com/apk/res-auto"  
+	  xmlns:tools="http://schemas.android.com/tools"  
+	  android:layout_width="match_parent"  
+	  android:layout_height="match_parent">  
+  
+  
+		 <com.kedia.customcamera.CCMultiple  android:id="@+id/cc"  
+		  android:layout_width="match_parent"  
+		  android:layout_height="match_parent"  
+		  app:showFlashButton="true"  
+		  app:showNoPermissionToast="true"  
+		  app:streamContinuously="true"  
+		  app:showRotateCamera="true" />  
+  
+	</androidx.constraintlayout.widget.ConstraintLayout>
+	
+
+This library provides with customisable features, which provides with a better control over the features.
 
 These features include:
 
