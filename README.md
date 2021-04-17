@@ -50,6 +50,8 @@ To receive continuous frames from the camera, set the value of `streamContinuous
 
 Currently the library supports only `STRATEGY_KEEP_ONLY_LATEST` of CameraX, which keeps only the latest image captured, until the image is closed. You can close the image by using the `closeImage()` method from Java / Kotlin code. Only after closing the image, will the next frame be available. 
 
+The continuous frames of the camera can be received in the callback `onCameraFrameReceived` which has the current bitmap.
+
 
 
 ### Found this library useful? :heart:
