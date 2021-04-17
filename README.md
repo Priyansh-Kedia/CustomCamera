@@ -79,7 +79,7 @@ The continuous frames of the camera can be received in the callback `onCameraFra
 ### Contributions
 - Fork the repo
 - Create a new branch and make changes
-- Push the code to the branch and make a PR! +1
+- Push the code to the branch and make a PR! (https://github.githubassets.com/images/icons/emoji/unicode/1f44d.png)
 
 
 ### Found this library useful? :heart:
