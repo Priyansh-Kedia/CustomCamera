@@ -76,6 +76,11 @@ Currently the library supports only `STRATEGY_KEEP_ONLY_LATEST` of CameraX, whic
 The continuous frames of the camera can be received in the callback `onCameraFrameReceived` which has the current bitmap.
 
 
+### Contributions
+- Fork the repo
+- Create a new branch and make changes
+- Push the code to the branch and make a PR! +1
+
 
 ### Found this library useful? :heart:
 
