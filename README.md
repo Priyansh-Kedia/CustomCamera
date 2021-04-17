@@ -5,7 +5,7 @@
 
 CCMultiple library provides you with the convenience of accessing the camera of your android device using the latest CameraX API, with just a few lines of code. 
 
-Star this repo to show your support [stargazers](https://github.com/Priyansh-Kedia/CustomCamera/stargazers) for this repository. :star2:
+### Star this repo to show your support [stargazers](https://github.com/Priyansh-Kedia/CustomCamera/stargazers) for this repository. :star2:
 
 Add it in your root build.gradle at the end of repositories:
 
