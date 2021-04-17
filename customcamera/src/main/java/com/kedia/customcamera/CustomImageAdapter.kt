@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
@@ -18,6 +19,7 @@ class CustomImageAdapter(
 ) : RecyclerView.Adapter<CustomImageAdapter.CustomViewHolder>() {
 
     private var lastPosition: Int = -1
+    private var showCancelOption = true
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -41,6 +43,15 @@ class CustomImageAdapter(
         notifyItemRemoved(position)
     }
 
+    fun clearList() {
+        this.list.clear()
+        notifyDataSetChanged()
+    }
+
+    fun showDeleteImage(showCancelOption: Boolean) {
+        this.showCancelOption = showCancelOption
+    }
+
     override fun onBindViewHolder(holder: CustomImageAdapter.CustomViewHolder, position: Int) {
         holder.bind(list[position])
         setAnimation(holder.itemView, position)
@@ -62,6 +73,8 @@ class CustomImageAdapter(
 
         fun bind(item: Bitmap?) {
             Glide.with(context).load(item).into(imageView)
+
+            cancelImage.isVisible = showCancelOption
 
             cancelImage.setOnClickListener {
                 onClick?.onDeleteImageClicked(adapterPosition, item)

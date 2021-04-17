@@ -34,33 +34,32 @@
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-        </FrameLayout>
+            app:layout_constraintStart_toStartOf="parent" />
 
         <ImageView
             android:id="@+id/flashToggle"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="40dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_flash_off"
-            app:layout_constraintBottom_toBottomOf="@id/captureImage"
-            app:layout_constraintEnd_toStartOf="@id/captureImage"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/captureImage"
             app:tint="#fff" />
 
         <ImageView
             android:id="@+id/rotateCamera"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="40dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_rotate_camera"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/captureImage"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/captureImage"
-            app:layout_constraintTop_toTopOf="@id/captureImage"
             app:tint="#fff" />
 
         <ImageView
@@ -97,7 +96,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -170,7 +169,6 @@
         <!--        -->
         <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
-        <include layout="@layout/gallery_bottom_sheet" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

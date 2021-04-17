@@ -2,6 +2,7 @@ package com.kedia.customcamera.utils
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.graphics.Point
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.params.StreamConfigurationMap
@@ -11,6 +12,7 @@ import android.util.Log
 import android.util.Size
 import android.view.Display
 import android.view.View
+import androidx.camera.core.CameraSelector
 import androidx.core.net.toUri
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -142,4 +144,21 @@ private fun saveImage(
         e.printStackTrace()
     }
     return Uri.EMPTY
+}
+
+fun rotateBitmap(decodeByteArray: Bitmap?, lensFacing: CameraSelector): Bitmap? {
+    val width = decodeByteArray?.width
+    val height = decodeByteArray?.height
+
+    val matrix = Matrix()
+    if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+        matrix.postRotate(90f)
+        matrix.preScale(-1f,1f)
+    }
+    else {
+        matrix.postRotate(90f)
+    }
+    val rotatedImage = Bitmap.createBitmap(decodeByteArray!!, 0, 0, width!!, height!!, matrix, true)
+    decodeByteArray.recycle()
+    return rotatedImage
 }

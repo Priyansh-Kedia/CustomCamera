@@ -6,7 +6,18 @@
         <attr name="snapButtonSelectedColor" format="color" />
         <attr name="showPreviewScreen" format="boolean" />
         <attr name="showNoPermissionToast" format="boolean" />
-        <attr name="showImageDeselectionOption" format="boolean" />
         <attr name="showRotateCamera" format="boolean" />
+        <attr name="showFlashButton" format="boolean" />
+
+        <!-- Single capture  done   -->
+        <attr name="captureSingle" format="boolean" />
+
+        <!-- Multiple Capture -->
+        <attr name="captureMultiple" format="boolean" />
+        <attr name="showImageDeselectionOption" format="boolean" />
+
+        <!-- Continuous stream -->
+        <attr name="streamContinuously" format="boolean" />
+
     </declare-styleable>
 </resources>

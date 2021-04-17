@@ -8,11 +8,12 @@
 
 
     <com.kedia.customcamera.CCMultiple
+        android:id="@+id/cc"
         android:layout_width="match_parent"
-        app:showSnapButton="true"
-        app:showRotateCamera="true"
-        app:showNoPermissionToast="true"
         android:layout_height="match_parent"
-        android:id="@+id/cc" />
+        app:showFlashButton="true"
+        app:showNoPermissionToast="true"
+        app:streamContinuously="true"
+        app:showRotateCamera="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

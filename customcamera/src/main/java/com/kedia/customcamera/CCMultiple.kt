@@ -2,7 +2,6 @@ package com.kedia.customcamera
 
 import android.Manifest
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
@@ -10,23 +9,20 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.MediaStore
 import android.util.AttributeSet
-import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.annotation.ColorInt
 import androidx.annotation.DimenRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -40,18 +36,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.common.util.concurrent.ListenableFuture
 import com.kedia.customcamera.utils.*
 import kotlinx.android.synthetic.main.custom_camera.view.*
-import kotlinx.android.synthetic.main.gallery_bottom_sheet.*
-import kotlinx.android.synthetic.main.gallery_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.lang.Math.abs
+import java.lang.RuntimeException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 
 class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleOwner {
@@ -60,6 +56,7 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
 
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+    private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var listener: CustomMultiple
     private lateinit var preview: Preview
 //    private lateinit var jpegCallback: Camera.PictureCallback
@@ -74,6 +71,8 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
     private val customCameraAdapter by lazy { CustomImageAdapter(context, mutableListOf(), this) }
     private val linearLayoutManager by lazy { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
     private val GALLERY_IMAGE_PICKER = 1
+
+    private var image: ImageProxy? = null
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
@@ -92,11 +91,15 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
     private var snapButtonSelectedColor: Int = context.resources.getColor(R.color.cardview_light_background)
     private var showSnapButton: Boolean = false
     private var showPreviewScreen: Boolean = false
+    private lateinit var cameraExecutor: ExecutorService
     private var imageCapture: ImageCapture? = null
     private var showNoPermissionToast = false
     private var showImageDeselectionOption = false
-    private var showRotateCamera = false
-
+    private var showRotateCamera = true
+    private var captureSingle = false
+    private var captureMultiple = false
+    private var showFlashButton = true
+    private var streamContinuously = false
 
     constructor(
         context: Context
@@ -116,6 +119,34 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         this.listener = listener
     }
 
+    fun setCaptureSingle(captureSingle: Boolean) {
+        this.captureSingle = captureSingle
+    }
+
+    fun setSnapButtonVisibility(showSnapButton: Boolean) {
+        this.showSnapButton = showSnapButton
+    }
+
+    fun setSnapButtonColor(@ColorInt snapButtonColor: Int) {
+        this.snapButtonColor = snapButtonColor
+    }
+
+    fun setSnapButtonSelectedColor(@ColorInt snapButtonSelectedColor: Int) {
+        this.snapButtonSelectedColor = snapButtonSelectedColor
+    }
+
+    fun setRotateVisibility(showRotateCamera: Boolean) {
+        this.showRotateCamera = showRotateCamera
+    }
+
+    fun showFlashToggle(showFlashButton: Boolean) {
+        this.showFlashButton = showFlashButton
+    }
+
+    fun setContinuousStreaming(streamContinuously: Boolean) {
+        this.streamContinuously = streamContinuously
+    }
+
     private fun init(attrs: AttributeSet?) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CCMultiple)
         try {
@@ -125,8 +156,12 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             snapButtonSelectedColor = typedArray.getColor(R.styleable.CCMultiple_snapButtonSelectedColor, Color.parseColor("#CB0000"))
             showPreviewScreen = typedArray.getBoolean(R.styleable.CCMultiple_showPreviewScreen, false)
             showNoPermissionToast = typedArray.getBoolean(R.styleable.CCMultiple_showNoPermissionToast, false)
-            showImageDeselectionOption = typedArray.getBoolean(R.styleable.CCMultiple_showImageDeselectionOption, false)
-            showRotateCamera = typedArray.getBoolean(R.styleable.CCMultiple_showRotateCamera, false)
+            showImageDeselectionOption = typedArray.getBoolean(R.styleable.CCMultiple_showImageDeselectionOption, true)
+            showRotateCamera = typedArray.getBoolean(R.styleable.CCMultiple_showRotateCamera, true)
+            captureSingle = typedArray.getBoolean(R.styleable.CCMultiple_captureSingle, false)
+            captureMultiple = typedArray.getBoolean(R.styleable.CCMultiple_captureMultiple, false)
+            showFlashButton = typedArray.getBoolean(R.styleable.CCMultiple_showFlashButton, true)
+            streamContinuously = typedArray.getBoolean(R.styleable.CCMultiple_streamContinuously, false)
         } finally {
             typedArray.recycle()
         }
@@ -146,88 +181,54 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         if (isPermissionGranted)
             init()
         else {
-            numberOfTimesChecked += 1
-            requirePermission()
+            logE("Camera permission not granted")
         }
-    }
-
-    private fun requirePermission() {
-        ActivityCompat.requestPermissions(context as Activity, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
-    }
-
-    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
-        super.onWindowFocusChanged(hasWindowFocus)
-        isPermissionGranted = ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
-        if (numberOfTimesChecked < 3 && !isPermissionGranted)
-            checkRequirements()
-        else {
-            if (numberOfTimesChecked >= 3 && !isPermissionGranted && hasWindowFocus) {
-                if (showNoPermissionToast) {
-                    Toast.makeText(context,"You need to grant permission to access camera",Toast.LENGTH_SHORT).show()
-                    logE("Camera permission declined")
-                }
-                else
-                    logE("Camera permission declined")
-            }
-            else {
-                if (isPermissionGranted)
-                    init()
-            }
-        }
-    }
-
-    private fun checkPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(context, REQUIRED_PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun setCamera() {
-            cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-            cameraProvider = cameraProviderFuture.get()
-
-            startCamera()
     }
 
     private fun init() {
+        checkConditions()
+        if (streamContinuously) showFlashButton = false
+        customCameraAdapter.showDeleteImage(showImageDeselectionOption)
         setCamera()
         initViews()
-
         setListeners()
     }
 
+    private fun checkConditions() {
+        if (captureSingle && captureMultiple) {
+            throw RuntimeException("Cannot enable single and multiple capture simultaneously")
+        }
+        if (streamContinuously && (captureMultiple || captureSingle)) {
+            throw RuntimeException("Cannot set capture limit on continuous streaming")
+        }
+        if (streamContinuously && showSnapButton) {
+            throw RuntimeException("Snap button needs to be disabled in case of continuous streaming")
+        }
+    }
+
+    private fun setCamera() {
+        cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProvider = cameraProviderFuture.get()
+
+        startCamera()
+    }
+
     private fun initViews() {
-        imageRecyclerView.apply {
-            adapter = customCameraAdapter
-            layoutManager = linearLayoutManager
+        if (!captureSingle || captureMultiple) {
+            imageRecyclerView.apply {
+                adapter = customCameraAdapter
+                layoutManager = linearLayoutManager
+            }
         }
 
+        imageRecyclerView.isVisible = captureMultiple
 
         captureImage.apply {
             isVisible = showSnapButton
             backgroundTintList = ColorStateList.valueOf(snapButtonColor)
         }
-
+        flashToggle.isVisible = showFlashButton
         rotateCamera.isVisible = showRotateCamera
-
-        if (::bottomSheetBehavior.isInitialized) {
-            bottomSheetBehavior.peekHeight = resources.getDimensionPixelOffset(peekHeight)
-            bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback)
-        }
-
-    }
-
-    private val bottomSheetCallback by lazy {
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-
-            }
-
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-
-                }
-            }
-
-        }
     }
 
     private fun setListeners() {
@@ -269,21 +270,30 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             if (showPreviewScreen) {
 
             } else {
-                if (::listener.isInitialized)
+                if (::listener.isInitialized) {
                     listener.onConfirmImagesClicked(uriArrayList)
+                    capturedImage.makeGone()
+                    confirmSelections.makeGone()
+                    customCameraAdapter.clearList()
+                    uriArrayList.clear()
+                }
                 else
                     logE("The listener has not been initialised")
             }
         }
 
-        gallery.setOnClickListener {
-            if (::listener.isInitialized)
-                listener.onGalleryClicked()
-            else
-                logE("The listener has not been initialised")
-        }
+//        gallery.setOnClickListener {
+//            if (::listener.isInitialized)
+//                listener.onGalleryClicked()
+//            else
+//                logE("The listener has not been initialised")
+//        }
 
         captureImage.setOnTouchListener { view, motionEvent ->
+            if (captureSingle && uriArrayList.size > 0) {
+                Toast.makeText(context, "Cannot capture more than one picture", Toast.LENGTH_SHORT).show()
+                return@setOnTouchListener true
+            }
             when(motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     view.backgroundTintList = ColorStateList.valueOf(snapButtonSelectedColor)
@@ -344,19 +354,34 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
 
     private fun startCamera() {
         //   cameraProvider.unbindAll()
+        cameraExecutor = Executors.newSingleThreadExecutor()
         cameraProviderFuture.addListener(Runnable {
             // Preview
             cameraSelector = lensFacing
 
+            val rotation = surfaceView.display.rotation
+
             preview = Preview.Builder()
+                .setTargetRotation(rotation)
                 .build()
                 .also {
-                    it.setSurfaceProvider(surfaceView.surfaceProvider)
+                        it.setSurfaceProvider(surfaceView.surfaceProvider)
                 }
 
             imageCapture = ImageCapture.Builder()
+                .setTargetRotation(rotation)
                 .build()
 
+            imageAnalyzer = ImageAnalysis.Builder()
+                .setTargetResolution(Size(800,600))
+                .setTargetRotation(rotation)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma, image ->
+                        invoke(image)
+                    })
+                }
 
             try {
                 // Unbind use cases before rebinding
@@ -364,13 +389,30 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
 
                 // Bind use cases to camera
                 camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
+                    this, cameraSelector, preview, imageCapture, imageAnalyzer)
 
             } catch(exc: Exception) {
                 logE("Use case binding failed $exc")
             }
 
         }, ContextCompat.getMainExecutor(context))
+    }
+
+    private fun invoke(image: ImageProxy) {
+        (context as LifecycleOwner).lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                surfaceView.bitmap?.let { bitmap ->
+                   if (streamContinuously) {
+                       this@CCMultiple.image = image
+                       listener.onCameraFrameReceived(bitmap)
+                   }
+                }
+            }
+        }
+    }
+
+    fun closeImage() {
+        this.image?.close()
     }
 
     private fun setButtonsClickable() {
@@ -393,8 +435,6 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        logV("Capturing image")
-
         if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA && imageCapture.flashMode == ImageCapture.FLASH_MODE_ON) {
             frontFlash.makeVisible()
             changeBrightness(BRIGHTNESS.HIGH)
@@ -406,14 +446,14 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
                 val buffer = image.planes[0].buffer
                 val cap = buffer.capacity()
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
-                logV("Bytes taken")
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
 
-                        val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+                        val rotatedBitmap = rotateBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size), lensFacing)
                         val uri = rotatedBitmap?.let { getUri(context, it) }
                         uri?.let { uriArrayList.add(it) }
                         withContext(Dispatchers.Main) {
+                            capturedImage.isVisible = captureSingle
                             capturedImage.apply {
                                 setImageBitmap(rotatedBitmap)
                             }
@@ -426,7 +466,6 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
                             if (atTop) {
                                 imageRecyclerView.scrollToPosition(0)
                             }
-                            recaptureImage.isVisible = capturedImage.isVisible
                             confirmSelections.isVisible = true
                             imageCount.text = "${uriArrayList.size}"
                             setButtonsClickable()
@@ -464,23 +503,6 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         }
     }
 
-    private fun rotateBitmap(decodeByteArray: Bitmap?): Bitmap? {
-        val width = decodeByteArray?.width
-        val height = decodeByteArray?.height
-
-        val matrix = Matrix()
-        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
-            matrix.postRotate(90f)
-            matrix.preScale(-1f,1f)
-        }
-        else {
-            matrix.postRotate(90f)
-        }
-        val rotatedImage = Bitmap.createBitmap(decodeByteArray!!, 0, 0, width!!, height!!, matrix, true)
-        decodeByteArray.recycle()
-        return rotatedImage
-    }
-
     fun getPath(): Uri? {
         return MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     }
@@ -491,16 +513,9 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         return lifecycleRegistry
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        imageArrayList.clear()
-        cameraProvider.unbindAll()
-
-    }
-
     override fun onDeleteImageClicked(adapterPosition: Int, bitmap: Bitmap?) {
         customCameraAdapter.removeItem(adapterPosition)
-        imageArrayList.remove(bitmap)
+        uriArrayList.removeAt(adapterPosition)
         imageCount.text = "${customCameraAdapter.itemCount}"
         if (customCameraAdapter.itemCount == 0)
             confirmSelections.makeGone()
@@ -511,11 +526,6 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             File(it, "IMG_").apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else context.filesDir
-    }
-
-    interface CustomMultiple {
-        fun onConfirmImagesClicked(imageArrayList: MutableList<Uri>)
-        fun onGalleryClicked()
     }
 
     companion object {
