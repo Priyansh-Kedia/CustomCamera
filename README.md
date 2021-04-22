@@ -66,7 +66,7 @@ The callback which can be invoked, is `onConfirmImagesClicked`, which gets a lis
 
 *The size of the list is 1 in case of single image capture.*
 
-## Receive continuous frames from the camera
+# Receive continuous frames from the camera
 
 To receive continuous frames from the camera, set the value of `streamContinuously` to `true` from the XML code. The value of this attribute can also be set using `setContinuousStreaming` from Java / Kotlin code. 
 *Remember that flash button cannot be visible when receiving continuous frames from the camera.*
