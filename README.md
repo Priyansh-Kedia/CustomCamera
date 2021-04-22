@@ -58,6 +58,7 @@ These features include:
  6. Flash button visibility:- You can control the visibility of the flash button. This can be done by setting `showFlashButton` to `true` from the XML code, or by setting `showFlashToggle` from your Java / Kotlin code. 
  7. Captured images number:- You can control if the user can capture single or multiple photos using the camera. This can be done by setting `captureSingle` or `captureMultiple` to true. **Remember**, if you set the value of both these attributes to `true` at the same time, it will lead to a runtime exception. 
  8. Image deselection option:- You can give the user the freedom to delete the captured images in case of multiple captures. This can be done by setting `showImageDeselectionOption` to `true` in your XML code. If the value of this attribute is set to `true`, the user will be able to see a small cross button at the top-right corner of the captured images, which can be used to delete a particular click. The default value of this attribute is `true`.
+ 9. Front flash:- When the camera is facing front, in case of multiple or single capture, there is a functionality for front flash, which runs on all Android devices by using the screen as a flash screen.
 
 # Set a listener to receive callbacks
 To receive the callbacks from the camera, you need to implement the interface `CustomMultiple`. You can do this by using `setListener` from your Java / Kotlin code. 
