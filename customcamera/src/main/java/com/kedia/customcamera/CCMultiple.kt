@@ -360,13 +360,13 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             // Preview
             cameraSelector = lensFacing
 
-            logE("surface is null ${surfaceView == null}")
             val display = surfaceView.display
             if (display == null) {
                 logE("called display")
-                invalidate()
+//                invalidate()
                 Thread.sleep(2000)
             }
+            logE("called after slepp")
             val rotation = surfaceView.display.rotation
 
             preview = Preview.Builder()
