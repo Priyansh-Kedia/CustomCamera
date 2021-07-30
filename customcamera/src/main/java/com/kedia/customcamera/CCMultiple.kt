@@ -361,19 +361,13 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             // Preview
             cameraSelector = lensFacing
 
-//            surfaceView.preferredImplementationMode = PreviewView.ImplementationMode.SURFACE_VIEW
+//            surfaceView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
 
-            surfaceView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-
-            val display = surfaceView.display
-            if (display == null) {
-                logE("called display")
-//                invalidate()
-                Thread.sleep(2000)
+            val rotation = if (surfaceView.display != null) {
+                surfaceView.display.rotation
+            } else {
+                surfaceView.rotation.toInt()
             }
-            logE("called after slepp")
-//            val rotation = surfaceView.display.rotation
-            val rotation = surfaceView.rotation.toInt()
 
             preview = Preview.Builder()
                 .setTargetRotation(rotation)
