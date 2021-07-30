@@ -210,6 +210,7 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProvider = cameraProviderFuture.get()
 
+
         startCamera()
     }
 
@@ -359,6 +360,11 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             // Preview
             cameraSelector = lensFacing
 
+            val display = surfaceView.display
+            if (display == null) {
+                invalidate()
+                Thread.sleep(2000)
+            }
             val rotation = surfaceView.display.rotation
 
             preview = Preview.Builder()
