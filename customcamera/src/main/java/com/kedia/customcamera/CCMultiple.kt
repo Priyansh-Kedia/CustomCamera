@@ -25,6 +25,7 @@ import androidx.annotation.LayoutRes
 import androidx.annotation.RequiresApi
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -359,6 +360,10 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
         cameraProviderFuture.addListener(Runnable {
             // Preview
             cameraSelector = lensFacing
+
+//            surfaceView.preferredImplementationMode = PreviewView.ImplementationMode.SURFACE_VIEW
+
+            surfaceView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
 
             val display = surfaceView.display
             if (display == null) {
