@@ -362,6 +362,7 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
 
             val display = surfaceView.display
             if (display == null) {
+                logE("called display")
                 invalidate()
                 Thread.sleep(2000)
             }
