@@ -372,7 +372,8 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
                 Thread.sleep(2000)
             }
             logE("called after slepp")
-            val rotation = surfaceView.display.rotation
+//            val rotation = surfaceView.display.rotation
+            val rotation = surfaceView.rotation.toInt()
 
             preview = Preview.Builder()
                 .setTargetRotation(rotation)
