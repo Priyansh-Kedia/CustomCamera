@@ -361,8 +361,6 @@ class CCMultiple: FrameLayout, CustomImageAdapter.CustomAdapterClick, LifecycleO
             // Preview
             cameraSelector = lensFacing
 
-//            surfaceView.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-
             val rotation = if (surfaceView.display != null) {
                 surfaceView.display.rotation
             } else {
